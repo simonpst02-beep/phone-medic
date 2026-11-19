@@ -1637,7 +1637,6 @@ async function initOptMem(){
   const o = nm && nm.total ? { 'RAM du téléphone': fmtBytes(nm.total), 'RAM disponible': fmtBytes(nm.available) }
     : { 'RAM du téléphone': navigator.deviceMemory ? 'au moins ' + navigator.deviceMemory + ' Go' : 'Non communiquée' };
   if (ns && ns.total) o['Stockage'] = `${fmtBytes(ns.total - ns.free)} sur ${fmtBytes(ns.total)}`;
-  if (performance.memory) o['Mémoire de cette page'] = fmtBytes(performance.memory.usedJSHeapSize);
   if (navigator.storage?.estimate) { try { const e = await navigator.storage.estimate(); o['Données de l\'appli'] = fmtBytes(e.usage); } catch(e){} }
   if (navigator.deviceMemory && navigator.deviceMemory <= 3) o['Conseil'] = 'Peu de RAM : limite les applis ouvertes';
   rows('optMem', o);

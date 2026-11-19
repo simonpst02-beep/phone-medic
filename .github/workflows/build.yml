@@ -42,7 +42,7 @@ jobs:
           ls -la "$d"
 
       - name: Compiler l'APK (version GitHub)
-        run: gradle assembleFullDebug --no-daemon --stacktrace -PbuildNumber=${{ github.run_number }}
+        run: gradle assembleFullDebug assemblePlayDebug --no-daemon --stacktrace -PbuildNumber=${{ github.run_number }}
 
       - name: Compiler le fichier Google Play (.aab)
         if: env.HAS_UPLOAD_KEY == 'true'
