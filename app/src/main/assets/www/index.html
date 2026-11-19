@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#E9EDF2">
+<title>Phone Medic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#E9EDF2; --surface:#FFFFFF; --sunk:#F3F5F8; --line:#D6DCE4;
+    --ink:#14213D; --mut:#5E6B82; --faint:#A9B3C2;
+    --acc:#2D5BFF; --acc-soft:#E3E9FF;
+    --ok:#17955A; --ok-soft:#DDF3E8; --ko:#D7263D; --ko-soft:#FBE1E4; --na:#C27A00; --na-soft:#FBEFD6;
+    --display:"Bricolage Grotesque", "Figtree", system-ui, sans-serif;
+    --body:"Figtree", system-ui, -apple-system, Roboto, sans-serif;
+    --r-lg:22px; --r-md:14px; --r-sm:10px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#0E1524; --surface:#172034; --sunk:#1E2940; --line:#2A3651; --ink:#EDF1F8; --mut:#9AA6BD; --faint:#4A5773;
+      --acc:#6E8BFF; --acc-soft:#22305A; --ok:#3CCB86; --ok-soft:#163A2D; --ko:#FF5A6E; --ko-soft:#43202A; --na:#F2B347; --na-soft:#3B2F17; }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body)}
+  body{min-height:100vh;padding:env(safe-area-inset-top) 0 calc(24px + env(safe-area-inset-bottom))}
+  body.guiding{padding-bottom:calc(120px + env(safe-area-inset-bottom))}
+  button{font:inherit;color:inherit;cursor:pointer}
+  :focus-visible{outline:3px solid var(--acc);outline-offset:2px;border-radius:8px}
+  svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+  .wrap{max-width:560px;margin:0 auto;padding:0 18px}
+
+  .view{display:none}
+  .view.on{display:block;animation:in .28s ease-out}
+  @keyframes in{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion: reduce){ .view.on{animation:none} *{transition:none!important;animation:none!important} }
+
+  /* ---------- accueil ---------- */
+  .home-top{display:flex;justify-content:space-between;align-items:center;padding:14px 0 0;gap:10px}
+  .brand{font:700 17px var(--display);letter-spacing:-.01em}
+  .device{font-size:14px;color:var(--mut);flex:1;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .icon-btn{width:40px;height:40px;border-radius:50%;border:0;background:var(--surface);display:grid;place-items:center;flex:none;color:var(--mut)}
+  .icon-btn.off{opacity:.55}
+  .gauge{position:relative;width:min(74vw,290px);aspect-ratio:1;margin:12px auto 4px}
+  .gauge svg{width:100%;height:100%;transform:rotate(-90deg)}
+  .gauge .seg{fill:none;stroke-width:15;transition:stroke .35s}
+  .gauge-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .gauge-num{font:800 clamp(54px,17vw,74px)/1 var(--display);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+  .gauge-num small{font-size:.38em;font-weight:500;color:var(--mut);letter-spacing:0}
+  .gauge-txt{font-size:14px;color:var(--mut);margin-top:6px;max-width:170px}
+  .legend{display:flex;justify-content:center;gap:16px;font-size:13px;color:var(--mut);margin-bottom:14px}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .grade{display:none;align-items:center;gap:12px;background:var(--surface);border-radius:var(--r-lg);padding:12px 16px;margin-bottom:10px}
+  .grade.on{display:flex}
+  .grade b{font:800 30px/1 var(--display);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+  .grade b small{font-size:.5em;color:var(--mut);font-weight:500}
+  .grade span{font-weight:600}
+  .start-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:17px;border:0;border-radius:var(--r-lg);
+    background:var(--acc);color:#fff;font-weight:700;font-size:17px;margin-bottom:10px}
+  .start-btn small{font-weight:500;opacity:.8;font-size:14px}
+
+  .cats{background:var(--surface);border-radius:var(--r-lg);overflow:hidden}
+  .cat{display:flex;align-items:center;gap:14px;width:100%;padding:15px 16px;border:0;background:none;text-align:left;border-bottom:1px solid var(--line)}
+  .cat:last-child{border-bottom:0}
+  .cat:active{background:var(--sunk)}
+  .cat-ic{width:44px;height:44px;border-radius:13px;background:var(--acc-soft);color:var(--acc);display:grid;place-items:center;flex:none}
+  .cat-body{flex:1;min-width:0}
+  .cat-name{font:700 17px var(--display);letter-spacing:-.01em}
+  .ticks{display:flex;gap:3px;margin-top:7px}
+  .ticks i{height:5px;flex:1;border-radius:3px;background:var(--line);transition:background .3s}
+  .cat-count{font-size:14px;color:var(--mut);font-variant-numeric:tabular-nums}
+  .cat .chev{color:var(--faint)}
+  .report-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:10px;padding:16px;border:0;border-radius:var(--r-lg);
+    background:var(--ink);color:var(--bg);font-weight:600;font-size:16px}
+
+  /* ---------- en-tête de catégorie ---------- */
+  .bar{position:sticky;top:0;z-index:4;background:var(--bg);padding:12px 0 10px;display:flex;align-items:center;gap:8px}
+  .back{width:44px;height:44px;border-radius:50%;border:0;background:var(--surface);display:grid;place-items:center;flex:none}
+  .bar h1{margin:0;font:800 26px/1.1 var(--display);letter-spacing:-.02em}
+  .bar .sub{font-size:14px;color:var(--mut)}
+
+  /* ---------- tests ---------- */
+  .tests{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+  details.test{background:var(--surface);border-radius:var(--r-md);transition:box-shadow .25s}
+  details.test.current{box-shadow:0 0 0 3px var(--acc)}
+  details.test > summary{list-style:none;display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer;min-height:60px}
+  details.test > summary::-webkit-details-marker{display:none}
+  .t-ic{color:var(--mut)}
+  .t-name{flex:1;font-weight:600}
+  .pill{font-size:13px;font-weight:600;padding:4px 10px;border-radius:99px;background:var(--sunk);color:var(--mut);white-space:nowrap}
+  .pill.ok{background:var(--ok-soft);color:var(--ok)}
+  .pill.ko{background:var(--ko-soft);color:var(--ko)}
+  .pill.na{background:var(--na-soft);color:var(--na)}
+  details.test[open] > summary{border-bottom:1px solid var(--line)}
+  .t-body{padding:14px}
+  .t-body p{margin:0 0 12px;color:var(--mut);font-size:15px;max-width:60ch}
+  .t-body p:last-child{margin-bottom:0}
+  .t-body p.res{color:var(--ink);font-weight:600}
+
+  .btn{border:0;border-radius:12px;padding:12px 16px;min-height:48px;font-weight:600;background:var(--sunk);flex:1 1 auto}
+  .btn.go{background:var(--acc);color:#fff}
+  .btn:disabled{opacity:.5}
+  .btn:active{transform:scale(.98)}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .ask{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)}
+  .ask .q{font-size:14px;color:var(--mut);margin-bottom:8px}
+  .yes,.no{border:1.5px solid var(--line);background:none;border-radius:12px;padding:10px 12px;min-height:46px;font-weight:600;flex:1}
+  .yes{color:var(--ok)} .no{color:var(--ko)}
+  .yes.sel{background:var(--ok);border-color:var(--ok);color:#fff}
+  .no.sel{background:var(--ko);border-color:var(--ko);color:#fff}
+
+  dl.kv{margin:0;display:grid;grid-template-columns:auto 1fr;gap:0}
+  dl.kv dt{color:var(--mut);font-size:14px;padding:9px 0;border-bottom:1px solid var(--line)}
+  dl.kv dd{margin:0;padding:9px 0 9px 16px;text-align:right;font-weight:600;font-variant-numeric:tabular-nums;border-bottom:1px solid var(--line)}
+  dl.kv dt:nth-last-child(2), dl.kv dd:last-child{border-bottom:0}
+  .panel{background:var(--surface);border-radius:var(--r-md);padding:4px 14px;margin-top:8px}
+  .panel h2{font:700 15px var(--display);margin:12px 0 2px;color:var(--mut)}
+
+  .battery{display:flex;align-items:center;gap:16px;background:var(--surface);border-radius:var(--r-lg);padding:18px;margin-bottom:8px}
+  .cell{position:relative;width:62px;height:108px;border:3px solid var(--ink);border-radius:12px;flex:none}
+  .cell::before{content:"";position:absolute;top:-9px;left:50%;width:22px;height:6px;margin-left:-11px;background:var(--ink);border-radius:3px 3px 0 0}
+  .cell i{position:absolute;left:4px;right:4px;bottom:4px;border-radius:6px;background:var(--ok);height:0;transition:height .6s,background .3s}
+  .bat-num{font:800 48px/1 var(--display);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+  .bat-state{color:var(--mut);font-size:15px;margin-top:4px}
+
+  .readout{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+  .readout.two{grid-template-columns:repeat(2,1fr)}
+  .readout div{background:var(--sunk);border-radius:var(--r-sm);padding:10px 6px;text-align:center}
+  .readout small{display:block;color:var(--mut);font-size:12px}
+  .readout b{font:700 18px var(--display);font-variant-numeric:tabular-nums}
+  .dial{width:150px;height:150px;border-radius:50%;margin:6px auto 4px;position:relative;background:var(--sunk)}
+  .dial.lvl::after{content:"";position:absolute;inset:50% auto auto 50%;width:40px;height:40px;margin:-20px;border-radius:50%;border:1.5px dashed var(--faint)}
+  .dial .bub{position:absolute;left:50%;top:50%;width:26px;height:26px;margin:-13px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 6px var(--acc-soft);transition:transform .06s}
+  .dial .needle{position:absolute;left:50%;top:50%;width:6px;height:120px;margin:-60px -3px;transition:transform .1s}
+  .dial .needle::before{content:"";position:absolute;inset:0 0 50%;background:var(--ko);border-radius:3px 3px 0 0}
+  .dial .needle::after{content:"";position:absolute;inset:50% 0 0;background:var(--faint);border-radius:0 0 3px 3px}
+  .dial .n{position:absolute;top:6px;left:50%;transform:translateX(-50%);font:700 13px var(--display);color:var(--ko)}
+  .lux{font:800 40px/1 var(--display);letter-spacing:-.02em;margin-bottom:10px}
+  .meter{height:12px;border-radius:6px;background:var(--sunk);overflow:hidden;margin-bottom:12px}
+  .meter i{display:block;height:100%;width:0;background:var(--acc);border-radius:6px;transition:width .08s}
+  .track{position:relative;height:44px;background:var(--sunk);border-radius:var(--r-sm);margin-bottom:12px;overflow:hidden}
+  .track i{position:absolute;top:8px;left:0;width:28px;height:28px;border-radius:50%;background:var(--acc)}
+  video{width:100%;border-radius:var(--r-sm);background:#000;margin-top:10px;max-height:300px;display:none}
+  audio{width:100%;margin-top:10px;display:none}
+  .keys{display:flex;flex-wrap:wrap;gap:6px}
+  .keys span{background:var(--ok-soft);color:var(--ok);border-radius:8px;padding:5px 10px;font-size:14px;font-weight:600}
+  .keys span.wait{background:var(--sunk);color:var(--mut)}
+  .note{font-size:14px;color:var(--mut);padding:14px 4px 0}
+
+  /* ---------- rapport ---------- */
+  .rep{background:var(--surface);border-radius:var(--r-lg);padding:18px}
+  .rep-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .rep-head b{font:800 20px var(--display)}
+  .rep-head span{color:var(--mut);font-size:14px}
+  .rep-score{display:flex;align-items:center;gap:16px;margin:14px 0 4px}
+  .rep-score .num{font:800 64px/1 var(--display);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+  .rep-score .num small{font-size:.35em;color:var(--mut);font-weight:500;letter-spacing:0}
+  .rep-score .lbl{font:700 19px/1.2 var(--display)}
+  .verdict{border-radius:var(--r-md);padding:12px 14px;margin:12px 0;font-weight:600}
+  .verdict.good{background:var(--ok-soft);color:var(--ok)}
+  .verdict.bad{background:var(--ko-soft);color:var(--ko)}
+  .verdict.wait{background:var(--sunk);color:var(--mut)}
+  .rep-list{list-style:none;margin:0;padding:0}
+  .rep-list li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:15px}
+  .rep-list li:last-child{border-bottom:0}
+  .rep-list li em{font-style:normal;color:var(--mut);font-size:13px;margin-left:auto;text-align:right}
+  .hist{background:var(--surface);border-radius:var(--r-lg);padding:6px 18px;margin-top:12px}
+  .hist h2{font:700 17px var(--display);margin:12px 0 4px}
+  .hist-item{border-bottom:1px solid var(--line)}
+  .hist-item:last-child{border-bottom:0}
+  .hist-item summary{list-style:none;display:flex;align-items:center;gap:10px;padding:12px 0;cursor:pointer}
+  .hist-item summary::-webkit-details-marker{display:none}
+  .hist-item .d{flex:1}
+  .hist-item .d small{display:block;color:var(--mut);font-size:13px}
+  .hist-item .s{font:800 22px var(--display);font-variant-numeric:tabular-nums}
+  .hist-item ul{margin:0 0 12px;padding-left:18px;color:var(--mut);font-size:14px}
+  .hist-empty{color:var(--mut);font-size:14px;padding:4px 0 14px;margin:0}
+  .link-btn{border:0;background:none;color:var(--ko);font-size:14px;padding:6px 0 12px}
+
+  /* ---------- mode test complet ---------- */
+  .guide{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--ink);color:var(--bg);
+    padding:12px 18px calc(12px + env(safe-area-inset-bottom));display:none;border-radius:20px 20px 0 0}
+  .guide.on{display:block}
+  .guide-in{max-width:560px;margin:0 auto}
+  .guide-top{display:flex;justify-content:space-between;font-size:13px;opacity:.75}
+  .guide-name{font:700 19px/1.3 var(--display);margin:2px 0 10px}
+  .guide-bar{height:4px;border-radius:2px;background:rgba(127,127,127,.35);margin-bottom:10px;overflow:hidden}
+  .guide-bar i{display:block;height:100%;background:var(--acc);width:0;transition:width .3s}
+  .guide .row button{flex:1;border:0;border-radius:12px;min-height:44px;font-weight:600;background:rgba(127,127,127,.25);color:inherit}
+
+  /* ---------- accueil premier lancement ---------- */
+  .welcome{position:fixed;inset:0;z-index:40;background:var(--bg);overflow:auto;display:none;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+  .welcome.on{display:block}
+  .welcome h1{font:800 38px/1.05 var(--display);letter-spacing:-.03em;margin:40px 0 12px}
+  .welcome > .wrap > p{color:var(--mut);margin:0 0 24px;font-size:17px}
+  .perm{display:flex;gap:14px;align-items:flex-start;background:var(--surface);border-radius:var(--r-md);padding:14px;margin-bottom:8px}
+  .perm .cat-ic{width:40px;height:40px}
+  .perm b{display:block}
+  .perm span{color:var(--mut);font-size:14px}
+  .welcome .start-btn{margin-top:20px}
+  .welcome .ghost{width:100%;border:0;background:none;padding:14px;color:var(--mut);font-weight:600;margin-bottom:20px}
+
+
+  /* ---------- optimisation ---------- */
+  .opt-entry{display:flex;align-items:center;gap:14px;width:100%;margin-top:10px;padding:15px 16px;border:0;border-radius:var(--r-lg);background:var(--surface);text-align:left}
+  .opt-entry .cat-ic{background:var(--ok-soft);color:var(--ok)}
+  .opt-entry small{display:block;color:var(--mut);font-size:14px}
+  .sec{background:var(--surface);border-radius:var(--r-lg);padding:16px;margin-top:10px}
+  .sec h2{font:700 19px var(--display);margin:0 0 4px;letter-spacing:-.01em}
+  .sec > p{color:var(--mut);font-size:15px;margin:0 0 12px}
+  .drop{display:block;border:2px dashed var(--line);border-radius:var(--r-md);padding:18px;text-align:center;color:var(--mut);cursor:pointer}
+  .drop b{display:block;color:var(--acc);font-size:16px;margin-bottom:2px}
+  .drop input{display:none}
+  .found{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:12px 0}
+  .found div{background:var(--sunk);border-radius:var(--r-sm);padding:10px 6px;text-align:center}
+  .found b{display:block;font:800 22px var(--display);font-variant-numeric:tabular-nums}
+  .found small{color:var(--mut);font-size:12px}
+  .grp{border-top:1px solid var(--line);padding:12px 0}
+  .grp-h{display:flex;justify-content:space-between;font-size:14px;color:var(--mut);margin-bottom:8px}
+  .grp-h b{color:var(--ink)}
+  .thumbs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+  .thumb{flex:none;width:96px}
+  .thumb .im{width:96px;height:96px;border-radius:10px;background:var(--sunk) center/cover;display:grid;place-items:center;color:var(--mut);position:relative}
+  .thumb .im i{position:absolute;left:6px;top:6px;background:var(--ok);color:#fff;font-style:normal;font-size:11px;font-weight:700;padding:1px 6px;border-radius:6px}
+  .thumb span{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
+  .big-list{list-style:none;margin:0;padding:0}
+  .big-list li{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+  .big-list li span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .big-list li b{font-variant-numeric:tabular-nums}
+  .usage{height:14px;border-radius:7px;background:var(--sunk);overflow:hidden;margin:6px 0 4px}
+  .usage i{display:block;height:100%;background:var(--acc);border-radius:7px}
+  .steps{list-style:none;margin:0;padding:0}
+  .steps li{border-top:1px solid var(--line)}
+  .steps label{display:flex;gap:12px;padding:12px 0;cursor:pointer;align-items:flex-start}
+  .steps input{width:22px;height:22px;accent-color:var(--ok);flex:none;margin:2px 0 0}
+  .steps b{display:block;font-weight:600}
+  .steps small{display:block;color:var(--mut);font-size:14px}
+  .steps .path{display:inline-block;margin-top:4px;background:var(--sunk);border-radius:6px;padding:2px 8px;font-size:13px;color:var(--ink)}
+  .steps input:checked + div b{text-decoration:line-through;color:var(--mut)}
+
+  .seg-ctl{display:flex;background:var(--sunk);border-radius:12px;padding:3px;margin:10px 0 4px}
+  .seg-ctl button{flex:1;border:0;background:none;border-radius:9px;padding:8px 4px;font-size:14px;font-weight:600;color:var(--mut)}
+  .seg-ctl button.on{background:var(--surface);color:var(--ink)}
+  .app-row{border-top:1px solid var(--line);padding:12px 0}
+  .app-top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+  .app-top b{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .app-top span{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+  .app-sub{font-size:13px;color:var(--mut);margin:2px 0 8px}
+  .app-sub .warn{color:var(--na);font-weight:600}
+  .app-row .row button{min-height:40px;padding:8px 10px;font-size:14px}
+  .open-btn{border:0;background:var(--acc-soft);color:var(--acc);border-radius:8px;padding:5px 10px;font-size:13px;font-weight:600;margin:6px 6px 0 0}
+  .native-only{display:none}
+  body.native .native-only{display:block}
+  body.native .web-only{display:none}
+
+  /* ---------- plein écran ---------- */
+  #overlay{position:fixed;inset:0;z-index:50;display:none;touch-action:none}
+  #overlay.on{display:block}
+  #overlay .msg{position:absolute;left:50%;bottom:calc(28px + env(safe-area-inset-bottom));transform:translateX(-50%);
+    background:rgba(0,0,0,.65);color:#fff;padding:8px 14px;border-radius:99px;font-size:14px;pointer-events:none;white-space:nowrap}
+  #touchGrid{position:absolute;inset:0;display:grid}
+  #touchGrid div{border:1px solid rgba(255,255,255,.07)}
+  #touchGrid div.hit{background:#17955A}
+  .dot{position:absolute;width:76px;height:76px;margin:-38px 0 0 -38px;border-radius:50%;border:4px solid #fff;pointer-events:none}
+  .closeBtn{position:absolute;top:calc(12px + env(safe-area-inset-top));right:12px;z-index:3;padding:8px 14px;border-radius:99px;
+    background:rgba(0,0,0,.6);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:14px}
+  .sheet{position:fixed;inset:0;z-index:55;background:rgba(10,15,30,.75);display:none;align-items:center;justify-content:center;padding:20px;flex-direction:column;gap:12px}
+  .sheet.on{display:flex}
+  .sheet img{max-width:100%;max-height:75vh;border-radius:12px}
+  .sheet p{color:#fff;margin:0;text-align:center}
+  .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,20px);background:var(--ink);color:var(--bg);
+    padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:60;max-width:90vw;text-align:center}
+  body.guiding .toast{bottom:calc(140px + env(safe-area-inset-bottom))}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-sys" viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></symbol>
+    <symbol id="i-screen" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></symbol>
+    <symbol id="i-sensor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/><path d="M7.5 7.5a6.4 6.4 0 0 0 0 9M16.5 7.5a6.4 6.4 0 0 1 0 9M4.6 4.6a10.5 10.5 0 0 0 0 14.8M19.4 4.6a10.5 10.5 0 0 1 0 14.8"/></symbol>
+    <symbol id="i-hw" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.2L3.5 17.3a1.8 1.8 0 0 0 2.5 2.5l5.8-5.8a4 4 0 0 0 5.2-5.4l-2.5 2.5-2.3-.4-.4-2.3z"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="i-report" viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></symbol>
+    <symbol id="i-sound" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/></symbol>
+    <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.6 16a5 5 0 0 1 6.8 0"/><circle cx="12" cy="19.2" r=".8"/></symbol>
+    <symbol id="i-speed" viewBox="0 0 24 24"><path d="M4 17a8 8 0 1 1 16 0"/><path d="M12 17l4-5"/></symbol>
+    <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9.5 9.5h5v5h-5zM9 2.5v3M15 2.5v3M9 18.5v3M15 18.5v3M2.5 9h3M2.5 15h3M18.5 9h3M18.5 15h3"/></symbol>
+    <symbol id="i-drain" viewBox="0 0 24 24"><rect x="3" y="7" width="16" height="10" rx="2"/><path d="M22 10.5v3"/><path d="M11 9.5l-2 2.5h4l-2 2.5"/></symbol>
+    <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.9 1.4-1.9-.5-1.2.3-2.4 1.6-2.4H18a3 3 0 0 0 3-3c0-5-4-9.7-9-9.7z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10.5" cy="7" r="1"/><circle cx="15.5" cy="8" r="1"/></symbol>
+    <symbol id="i-hand" viewBox="0 0 24 24"><path d="M9 11V5a1.5 1.5 0 0 1 3 0v5M12 10V4a1.5 1.5 0 0 1 3 0v6M15 10V6a1.5 1.5 0 0 1 3 0v8a7 7 0 0 1-7 7h-.5a6 6 0 0 1-5-2.7L3.2 14a1.5 1.5 0 0 1 2.4-1.8L9 15V11"/></symbol>
+    <symbol id="i-multi" viewBox="0 0 24 24"><circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><circle cx="12" cy="16.5" r="3"/></symbol>
+    <symbol id="i-grad" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 5v14M13 5v14M17.5 5v14"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    <symbol id="i-hz" viewBox="0 0 24 24"><path d="M2 12h3l2-6 4 12 3-9 2 3h6"/></symbol>
+    <symbol id="i-accel" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><path d="M9 6l3-3 3 3M18 9l3 3-3 3"/></symbol>
+    <symbol id="i-gyro" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v4h-4"/><circle cx="12" cy="12" r="2"/></symbol>
+    <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></symbol>
+    <symbol id="i-light" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+    <symbol id="i-prox" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M10 5.5h4M3 9a5 5 0 0 0 0 6"/></symbol>
+    <symbol id="i-speaker" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></symbol>
+    <symbol id="i-vib" viewBox="0 0 24 24"><rect x="8" y="3.5" width="8" height="17" rx="2"/><path d="M4.5 8v8M19.5 8v8M2 10v4M22 10v4"/></symbol>
+    <symbol id="i-cam" viewBox="0 0 24 24"><path d="M4 7.5h3l1.5-2.5h7L17 7.5h3a1 1 0 0 1 1 1V19a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8.5a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></symbol>
+    <symbol id="i-flash" viewBox="0 0 24 24"><path d="M13 2.5L5 13.5h6l-1 8 8-11h-6z"/></symbol>
+    <symbol id="i-btn" viewBox="0 0 24 24"><rect x="6" y="2.5" width="11" height="19" rx="2.5"/><path d="M20 7v4M20 14v2"/></symbol>
+    <symbol id="i-bt" viewBox="0 0 24 24"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 3v12M7.5 7.5L12 3l4.5 4.5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></symbol>
+    <symbol id="i-broom" viewBox="0 0 24 24"><path d="M14 3l-3.5 8M6.5 11h8l1.5 10H5z"/><path d="M8.5 15v6M12.5 15v6"/></symbol>
+  </defs>
+</svg>
+
+<!-- ================= PREMIER LANCEMENT ================= -->
+<div class="welcome" id="welcome">
+  <div class="wrap">
+    <h1>Vérifie ton téléphone en 10 minutes</h1>
+    <p>L'appli teste l'écran, les capteurs, le son, les caméras et la batterie, puis te donne une note sur 100.</p>
+    <div class="perm"><span class="cat-ic"><svg class="i"><use href="#i-cam"/></svg></span><div><b>Caméra et micro</b><span>Pour vérifier l'image, le flash et l'enregistrement de ta voix.</span></div></div>
+    <div class="perm"><span class="cat-ic"><svg class="i"><use href="#i-pin"/></svg></span><div><b>Position</b><span>Pour mesurer la précision du GPS.</span></div></div>
+    <div class="perm"><span class="cat-ic"><svg class="i"><use href="#i-sensor"/></svg></span><div><b>Capteurs de mouvement</b><span>Pour l'accéléromètre, le gyroscope et la boussole.</span></div></div>
+    <div class="perm"><span class="cat-ic"><svg class="i"><use href="#i-lock"/></svg></span><div><b>Tes données restent ici</b><span>Les résultats sont gardés sur ce téléphone. Seul le test de débit contacte un serveur Cloudflare.</span></div></div>
+    <button class="start-btn" onclick="closeWelcome(true)"><svg class="i"><use href="#i-play"/></svg>Lancer le test complet</button>
+    <button class="ghost" onclick="closeWelcome(false)">Choisir les tests moi-même</button>
+  </div>
+</div>
+
+<!-- ================= ACCUEIL ================= -->
+<section class="view on" id="v-home">
+  <div class="wrap">
+    <div class="home-top">
+      <div class="brand">Phone Medic</div>
+      <div class="device" id="devName">—</div>
+      <button class="icon-btn" id="fbBtn" aria-label="Sons et vibrations" onclick="toggleFeedback()"><svg class="i"><use href="#i-sound"/></svg></button>
+    </div>
+
+    <div class="gauge">
+      <svg viewBox="0 0 200 200" id="gaugeSvg" aria-hidden="true"></svg>
+      <div class="gauge-center">
+        <div class="gauge-num" id="gNum">0</div>
+        <div class="gauge-txt" id="gTxt">tests effectués</div>
+      </div>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--ok)"></i>OK</span>
+      <span><i style="background:var(--ko)"></i>Échec</span>
+      <span><i style="background:var(--na)"></i>Non supporté</span>
+    </div>
+
+    <div class="grade" id="homeGrade"><b id="hgNum">—</b><span id="hgLbl">—</span></div>
+    <button class="start-btn" id="startBtn" onclick="startGuide()"><svg class="i"><use href="#i-play"/></svg><span id="startLbl">Lancer le test complet</span></button>
+
+    <div class="cats">
+      <button class="cat" data-go="v-sys"><span class="cat-ic"><svg class="i"><use href="#i-sys"/></svg></span>
+        <span class="cat-body"><span class="cat-name">Système</span><span class="ticks" data-ticks="sys"></span></span>
+        <span class="cat-count" data-count="sys"></span><svg class="i chev"><use href="#i-chev"/></svg></button>
+      <button class="cat" data-go="v-screen"><span class="cat-ic"><svg class="i"><use href="#i-screen"/></svg></span>
+        <span class="cat-body"><span class="cat-name">Écran</span><span class="ticks" data-ticks="screen"></span></span>
+        <span class="cat-count" data-count="screen"></span><svg class="i chev"><use href="#i-chev"/></svg></button>
+      <button class="cat" data-go="v-sensors"><span class="cat-ic"><svg class="i"><use href="#i-sensor"/></svg></span>
+        <span class="cat-body"><span class="cat-name">Capteurs</span><span class="ticks" data-ticks="sensors"></span></span>
+        <span class="cat-count" data-count="sensors"></span><svg class="i chev"><use href="#i-chev"/></svg></button>
+      <button class="cat" data-go="v-hw"><span class="cat-ic"><svg class="i"><use href="#i-hw"/></svg></span>
+        <span class="cat-body"><span class="cat-name">Matériel</span><span class="ticks" data-ticks="hw"></span></span>
+        <span class="cat-count" data-count="hw"></span><svg class="i chev"><use href="#i-chev"/></svg></button>
+    </div>
+
+    <button class="opt-entry" data-go="v-opt"><span class="cat-ic"><svg class="i"><use href="#i-broom"/></svg></span>
+      <span style="flex:1"><span class="cat-name">Optimisation</span><small id="optSummary">Doublons, gros fichiers, mémoire</small></span><svg class="i chev" style="color:var(--faint)"><use href="#i-chev"/></svg></button>
+
+    <button class="report-btn" data-go="v-report"><svg class="i"><use href="#i-report"/></svg>Voir le rapport</button>
+  </div>
+</section>
+
+<!-- ================= SYSTÈME ================= -->
+<section class="view" id="v-sys">
+  <div class="wrap">
+    <div class="bar"><button class="back" aria-label="Retour" data-go="v-home"><svg class="i"><use href="#i-back"/></svg></button><div><h1>Système</h1><div class="sub">Batterie, réseau et performances</div></div></div>
+
+    <div class="battery">
+      <div class="cell"><i id="batFill"></i></div>
+      <div style="flex:1">
+        <div class="bat-num" id="batLevel">—</div>
+        <div class="bat-state" id="batState">Lecture de la batterie…</div>
+      </div>
+      <span class="pill" data-chip="battery">—</span>
+    </div>
+
+    <div class="panel native-only" style="margin:0 0 8px"><h2>Santé de la batterie</h2><dl class="kv" id="batDetail"></dl></div>
+
+    <div class="tests">
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-drain"/></svg><span class="t-name">Usure de la batterie</span><span class="pill" data-chip="drain">À faire</span></summary>
+        <div class="t-body"><p>Mesure la vitesse de décharge pendant 5 minutes, écran allumé. Débranche le chargeur et garde l'appli ouverte.</p>
+          <div class="readout"><div><small>Départ</small><b id="drStart">—</b></div><div><small>Actuel</small><b id="drNow">—</b></div><div><small>Reste</small><b id="drLeft">5:00</b></div></div>
+          <button class="btn go" style="width:100%" id="drBtn" onclick="testDrain()">Mesurer pendant 5 minutes</button>
+          <p class="res" id="drRes" style="margin-top:12px"></p></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-wifi"/></svg><span class="t-name">Connexion</span><span class="pill" data-chip="network">—</span></summary>
+        <div class="t-body"><dl class="kv" id="netTable"></dl></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-speed"/></svg><span class="t-name">Débit internet</span><span class="pill" data-chip="speed">À faire</span></summary>
+        <div class="t-body"><div class="readout"><div><small>Ping</small><b id="spPing">—</b></div><div><small>Réception</small><b id="spDown">—</b></div><div><small>Envoi</small><b id="spUp">—</b></div></div>
+          <button class="btn go" style="width:100%" id="spBtn" onclick="testSpeed()">Mesurer le débit</button>
+          <p style="margin-top:12px">Utilise environ 15 Mo de données. Préfère le Wi-Fi.</p></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-cpu"/></svg><span class="t-name">Performances</span><span class="pill" data-chip="cpu">À faire</span></summary>
+        <div class="t-body"><div class="readout two"><div><small>Score 1 cœur</small><b id="cpuSingle">—</b></div><div><small>Score tous les cœurs</small><b id="cpuMulti">—</b></div></div>
+          <button class="btn go" style="width:100%" id="cpuBtn" onclick="testCPU()">Lancer le benchmark</button>
+          <p style="margin-top:12px">Dure environ 5 secondes. Compare le score avec un autre téléphone ou avec ton historique.</p></div></details>
+    </div>
+
+    <div class="panel"><h2>Appareil</h2><dl class="kv" id="devTable"></dl></div>
+    <div class="panel"><h2>Mémoire</h2><dl class="kv" id="memTable"></dl></div>
+    <p class="note web-only">La santé et la température de la batterie, ainsi que le stockage total du téléphone, sont lisibles dans la version APK.</p>
+  </div>
+</section>
+
+<!-- ================= ÉCRAN ================= -->
+<section class="view" id="v-screen">
+  <div class="wrap">
+    <div class="bar"><button class="back" aria-label="Retour" data-go="v-home"><svg class="i"><use href="#i-back"/></svg></button><div><h1>Écran</h1><div class="sub">Affichage et tactile</div></div></div>
+    <div class="tests">
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-palette"/></svg><span class="t-name">Pixels morts</span><span class="pill" data-chip="pixels">À faire</span></summary>
+        <div class="t-body"><p>L'écran affiche six couleurs en plein écran. Touche l'écran pour passer à la suivante et cherche les points qui ne changent pas.</p>
+          <button class="btn go" style="width:100%" onclick="startPixels()">Lancer les couleurs</button>
+          <div class="ask"><div class="q">As-tu vu des points fixes ?</div><div class="row"><button class="yes" onclick="mark('pixels','ok')">Aucun point</button><button class="no" onclick="mark('pixels','ko')">Oui, des points</button></div></div></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-hand"/></svg><span class="t-name">Tactile</span><span class="pill" data-chip="touch">À faire</span></summary>
+        <div class="t-body"><p>Passe le doigt sur toutes les cases de la grille. Le test est validé quand elle est entièrement verte.</p>
+          <button class="btn go" style="width:100%" onclick="startTouch()">Lancer la grille</button>
+          <div class="ask"><div class="q">Une zone refuse de répondre ?</div><div class="row"><button class="no" onclick="mark('touch','ko')">Oui, une zone est morte</button></div></div></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-multi"/></svg><span class="t-name">Multi-touch</span><span class="pill" data-chip="multitouch">À faire</span></summary>
+        <div class="t-body"><p>Pose plusieurs doigts en même temps sur l'écran. Ton téléphone annonce <b id="maxTP">—</b> points simultanés.</p>
+          <button class="btn go" style="width:100%" onclick="startMulti()">Lancer le test</button></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-sun"/></svg><span class="t-name">Luminosité maximale</span><span class="pill" data-chip="brightness">À faire</span></summary>
+        <div class="t-body"><p>Monte la luminosité au maximum, puis affiche un écran blanc. Il doit être éclatant et sans zone jaunie ou plus sombre.</p>
+          <button class="btn go" style="width:100%" onclick="startBrightness()">Afficher l'écran blanc</button>
+          <div class="ask"><div class="q">L'écran est-il lumineux et uniforme ?</div><div class="row"><button class="yes" onclick="mark('brightness','ok')">Oui</button><button class="no" onclick="mark('brightness','ko')">Terne ou inégal</button></div></div></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-grad"/></svg><span class="t-name">Uniformité</span><span class="pill" data-chip="gradient">À faire</span></summary>
+        <div class="t-body"><p>Un dégradé du noir au blanc doit être lisse, sans bandes ni zones plus sombres (marquage OLED).</p>
+          <button class="btn go" style="width:100%" onclick="startGradient()">Afficher le dégradé</button>
+          <div class="ask"><div class="q">Le dégradé est-il régulier ?</div><div class="row"><button class="yes" onclick="mark('gradient','ok')">Régulier</button><button class="no" onclick="mark('gradient','ko')">Taches ou bandes</button></div></div></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-hz"/></svg><span class="t-name">Fluidité</span><span class="pill" data-chip="refresh">À faire</span></summary>
+        <div class="t-body"><div class="track"><i id="hzBall"></i></div>
+          <div class="readout two"><div><small>Fréquence mesurée</small><b id="hzVal">—</b></div><div><small>Images perdues</small><b id="hzDrop">—</b></div></div>
+          <button class="btn go" style="width:100%" id="hzBtn" onclick="testRefresh()">Mesurer la fluidité</button>
+          <p style="margin-top:12px">Le navigateur peut brider l'écran à 60 Hz pour économiser la batterie, même sur un écran 120 Hz.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CAPTEURS ================= -->
+<section class="view" id="v-sensors">
+  <div class="wrap">
+    <div class="bar"><button class="back" aria-label="Retour" data-go="v-home"><svg class="i"><use href="#i-back"/></svg></button><div><h1>Capteurs</h1><div class="sub">Mouvement, orientation et position</div></div></div>
+    <button class="btn go" style="width:100%;margin-bottom:10px" id="sensBtn" onclick="startSensors()">Activer les capteurs</button>
+    <div class="tests">
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-accel"/></svg><span class="t-name">Accéléromètre</span><span class="pill" data-chip="accel">À faire</span></summary>
+        <div class="t-body"><div class="readout"><div><small>X</small><b id="ax">—</b></div><div><small>Y</small><b id="ay">—</b></div><div><small>Z</small><b id="az">—</b></div></div>
+          <div class="dial lvl"><div class="bub" id="bubble"></div></div>
+          <p style="text-align:center">Pose le téléphone à plat : la bille doit rester dans le cercle.</p></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-gyro"/></svg><span class="t-name">Gyroscope</span><span class="pill" data-chip="gyro">À faire</span></summary>
+        <div class="t-body"><div class="readout"><div><small>α °/s</small><b id="ga">—</b></div><div><small>β °/s</small><b id="gb">—</b></div><div><small>γ °/s</small><b id="gg">—</b></div></div>
+          <p>Fais tourner le téléphone dans ta main. Le test se valide tout seul quand la rotation est détectée.</p></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-compass"/></svg><span class="t-name">Boussole</span><span class="pill" data-chip="compass">À faire</span></summary>
+        <div class="t-body"><div class="dial"><span class="n">N</span><div class="needle" id="needle"></div></div>
+          <div class="readout" style="margin-top:12px"><div><small>Cap</small><b id="oa">—</b></div><div><small>Inclinaison</small><b id="ob">—</b></div><div><small>Roulis</small><b id="og">—</b></div></div>
+          <p>Si l'aiguille est instable, fais un mouvement en forme de 8 pour calibrer.</p></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-light"/></svg><span class="t-name">Luminosité ambiante</span><span class="pill" data-chip="light">À faire</span></summary>
+        <div class="t-body"><div class="lux" id="lux">—</div><p>Cache le haut de l'écran avec la main : la valeur doit baisser.</p></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-pin"/></svg><span class="t-name">GPS</span><span class="pill" data-chip="gps">À faire</span></summary>
+        <div class="t-body"><button class="btn go" style="width:100%" onclick="testGPS()">Me localiser</button><dl class="kv" id="gpsTable" style="margin-top:8px"></dl></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-prox"/></svg><span class="t-name">Proximité</span><span class="pill" data-chip="proximity">À faire</span></summary>
+        <div class="t-body"><div class="lux native-only" id="proxVal">—</div><p id="proxTxt">Un navigateur ne peut pas lire le capteur de proximité. Ce test est disponible dans la version APK.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MATÉRIEL ================= -->
+<section class="view" id="v-hw">
+  <div class="wrap">
+    <div class="bar"><button class="back" aria-label="Retour" data-go="v-home"><svg class="i"><use href="#i-back"/></svg></button><div><h1>Matériel</h1><div class="sub">Son, image et boutons</div></div></div>
+    <div class="tests">
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-speaker"/></svg><span class="t-name">Haut-parleurs</span><span class="pill" data-chip="speaker">À faire</span></summary>
+        <div class="t-body"><p>Teste chaque côté, puis lance le balayage : le son monte du grave à l'aigu. Écoute s'il grésille ou s'il coupe.</p>
+          <div class="row"><button class="btn" onclick="tone(-1)">Gauche</button><button class="btn" onclick="tone(1)">Droite</button></div>
+          <button class="btn go" style="width:100%;margin-top:8px" onclick="sweep()">Balayage grave → aigu</button>
+          <div class="ask"><div class="q">Le son est-il clair du début à la fin ?</div><div class="row"><button class="yes" onclick="mark('speaker','ok')">Clair</button><button class="no" onclick="mark('speaker','ko')">Grésille ou coupe</button></div></div>
+          <button class="btn native-only" style="width:100%;margin-top:8px" onclick="testEarpiece()">Tester l'écouteur d'appel</button>
+          <p class="web-only" style="margin-top:12px">L'écouteur d'appel ne peut pas être piloté depuis un navigateur. Il est testé dans l'APK.</p></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-mic"/></svg><span class="t-name">Micro</span><span class="pill" data-chip="mic">À faire</span></summary>
+        <div class="t-body"><p>Parle normalement : le test se valide tout seul quand ta voix est captée. Tu peux aussi t'enregistrer pour vérifier la qualité.</p>
+          <div class="meter"><i id="micMeter"></i></div>
+          <div class="row"><button class="btn go" id="micBtn" onclick="toggleMic()">Écouter le micro</button><button class="btn" onclick="recordMic()">Enregistrer 3 s</button></div>
+          <audio id="micPlayback" controls></audio>
+          <div class="ask"><div class="q">L'enregistrement est-il propre ?</div><div class="row"><button class="yes" onclick="mark('mic','ok')">Oui</button><button class="no" onclick="mark('mic','ko')">Non</button></div></div></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-vib"/></svg><span class="t-name">Vibreur</span><span class="pill" data-chip="vibrate">À faire</span></summary>
+        <div class="t-body"><button class="btn go" style="width:100%" onclick="testVibrate()">Faire vibrer</button>
+          <div class="ask"><div class="q">As-tu senti la vibration ?</div><div class="row"><button class="yes" onclick="mark('vibrate','ok')">Oui</button><button class="no" onclick="mark('vibrate','ko')">Non</button></div></div></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-cam"/></svg><span class="t-name">Caméras</span><span class="pill" data-chip="camera">À faire</span></summary>
+        <div class="t-body"><div class="row"><button class="btn go" onclick="openCam('environment')">Arrière</button><button class="btn go" onclick="openCam('user')">Avant</button><button class="btn" onclick="stopCam()">Couper</button></div>
+          <video id="camVideo" playsinline autoplay muted></video>
+          <p id="camInfo" style="margin-top:10px"></p>
+          <div class="ask"><div class="q">Les deux images sont-elles nettes ?</div><div class="row"><button class="yes" onclick="mark('camera','ok')">Nettes</button><button class="no" onclick="mark('camera','ko')">Floue ou noire</button></div></div></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-flash"/></svg><span class="t-name">Flash</span><span class="pill" data-chip="flash">À faire</span></summary>
+        <div class="t-body"><p>Allume la lampe de la caméra arrière. Fonctionne surtout avec Chrome sur Android.</p>
+          <button class="btn go" style="width:100%" onclick="toggleTorch()">Allumer ou éteindre</button>
+          <div class="ask"><div class="q">Le flash s'est-il allumé ?</div><div class="row"><button class="yes" onclick="mark('flash','ok')">Oui</button><button class="no" onclick="mark('flash','ko')">Non</button></div></div></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-btn"/></svg><span class="t-name">Boutons</span><span class="pill" data-chip="buttons">À faire</span></summary>
+        <div class="t-body"><p id="keysTxt">Appuie sur les boutons physiques. Un navigateur n'en capte que quelques-uns, souvent aucun pour le volume ; le test complet est dans l'APK.</p>
+          <div class="keys" id="keys"><span class="wait">En attente d'un appui</span></div></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-bt"/></svg><span class="t-name">Bluetooth</span><span class="pill" data-chip="bluetooth">À faire</span></summary>
+        <div class="t-body"><p id="btInfo">—</p></div></details>
+    </div>
+  </div>
+</section>
+
+<!-- ================= OPTIMISATION ================= -->
+<section class="view" id="v-opt">
+  <div class="wrap">
+    <div class="bar"><button class="back" aria-label="Retour" data-go="v-home"><svg class="i"><use href="#i-back"/></svg></button><div><h1>Optimisation</h1><div class="sub">Libérer de la place et alléger le téléphone</div></div></div>
+
+    <div class="sec">
+      <h2>Doublons et photos similaires</h2>
+      <p>Sélectionne tes photos, vidéos ou téléchargements. L'analyse se fait sur le téléphone, rien n'est envoyé.</p>
+      <label class="drop"><b>Choisir des fichiers</b>Tu peux tout sélectionner d'un coup dans la galerie<input type="file" id="dupInput" multiple accept="image/*,video/*,audio/*,application/pdf,*/*"></label>
+      <div id="dupProgress" class="note" style="display:none;padding-top:10px"></div>
+      <div id="dupResult"></div>
+    </div>
+
+    <div class="sec">
+      <h2>Mémoire et stockage</h2>
+      <dl class="kv" id="optMem"></dl>
+      <p class="web-only" style="margin:12px 0 0;font-size:14px;color:var(--mut)">Un navigateur ne voit pas l'occupation réelle du téléphone. Regarde-la dans Réglages, puis indique-la ici pour savoir si c'est un problème.</p>
+      <div class="row web-only" style="margin-top:10px;align-items:center">
+        <input type="range" id="storPct" min="0" max="100" value="50" style="flex:1;accent-color:var(--acc)">
+        <b id="storLbl" style="width:52px;text-align:right">50 %</b>
+      </div>
+      <p class="res" id="storAdvice" style="margin:8px 0 0;font-weight:600"></p>
+    </div>
+
+    <div class="sec native-only" id="appsSec">
+      <h2>Applications</h2>
+      <p>Repère les applis lourdes, celles qui gardent un gros cache et celles que tu n'ouvres plus.</p>
+      <div id="appsAccess"></div>
+      <button class="btn go" id="appsBtn" style="width:100%" onclick="loadApps()">Analyser mes applis</button>
+      <div id="appsResult"></div>
+    </div>
+
+    <div class="sec">
+      <h2>Étapes pour accélérer le téléphone</h2>
+      <p id="stepsCount">Coche chaque étape une fois faite.</p>
+      <ul class="steps" id="steps"></ul>
+    </div>
+    <p class="note web-only">Dans la version APK, l'appli liste les applis inutilisées, montre leur cache et ouvre directement les bons réglages.</p>
+    <p class="note native-only">Android ne permet à aucune appli de vider le cache des autres : le bouton « Vider le cache » ouvre la bonne page des réglages.</p>
+  </div>
+</section>
+
+<!-- ================= RAPPORT ================= -->
+<section class="view" id="v-report">
+  <div class="wrap">
+    <div class="bar"><button class="back" aria-label="Retour" data-go="v-home"><svg class="i"><use href="#i-back"/></svg></button><div><h1>Rapport</h1><div class="sub" id="repDate">—</div></div></div>
+    <div class="rep">
+      <div class="rep-head"><b id="repDevice">—</b><span id="repOs">—</span></div>
+      <div class="rep-score"><div class="num" id="repNum">—</div><div class="lbl" id="repLbl">—</div></div>
+      <div class="verdict wait" id="repVerdict">—</div>
+      <ul class="rep-list" id="repList"></ul>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn go" onclick="shareImage()"><svg class="i" style="vertical-align:-5px;margin-right:6px"><use href="#i-share"/></svg>Partager en image</button>
+      <button class="btn" onclick="copyReport()">Copier le texte</button>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <button class="btn" onclick="saveHistory(true)">Enregistrer dans l'historique</button>
+      <button class="btn" onclick="resetAll()">Refaire les tests</button>
+    </div>
+
+    <div class="hist"><h2>Historique</h2><div id="histList"></div></div>
+    <textarea id="reportTxt" readonly style="position:absolute;left:-9999px" aria-hidden="true"></textarea>
+  </div>
+</section>
+
+<!-- barre du test complet -->
+<div class="guide" id="guide">
+  <div class="guide-in">
+    <div class="guide-top"><span>Test complet</span><span id="gdStep">—</span></div>
+    <div class="guide-name" id="gdName">—</div>
+    <div class="guide-bar"><i id="gdBar"></i></div>
+    <div class="row"><button onclick="guideSkip()">Passer ce test</button><button onclick="stopGuide()">Arrêter</button></div>
+  </div>
+</div>
+
+<div id="overlay"></div>
+<div class="sheet" id="sheet" onclick="this.classList.remove('on')"><img id="sheetImg" alt="Rapport en image"><p>Appuie longuement sur l'image pour l'enregistrer ou la partager.</p></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* =========================================================
+   DÉFINITION DES TESTS
+   ========================================================= */
+const TESTS = {
+  battery:'Batterie', drain:'Usure batterie', network:'Connexion', speed:'Débit internet', cpu:'Performances',
+  pixels:'Pixels morts', touch:'Tactile', multitouch:'Multi-touch', brightness:'Luminosité max', gradient:'Uniformité écran', refresh:'Fluidité',
+  accel:'Accéléromètre', gyro:'Gyroscope', compass:'Boussole', light:'Luminosité ambiante', gps:'GPS', proximity:'Proximité',
+  speaker:'Haut-parleurs', mic:'Micro', vibrate:'Vibreur', camera:'Caméras', flash:'Flash', buttons:'Boutons', bluetooth:'Bluetooth'
+};
+const CATS = {
+  sys:['battery','drain','network','speed','cpu'],
+  screen:['pixels','touch','multitouch','brightness','gradient','refresh'],
+  sensors:['accel','gyro','compass','light','gps','proximity'],
+  hw:['speaker','mic','vibrate','camera','flash','buttons','bluetooth']
+};
+const VIEW_OF = {}; const VIEWS = {sys:'v-sys',screen:'v-screen',sensors:'v-sensors',hw:'v-hw'};
+for (const c in CATS) CATS[c].forEach(id => VIEW_OF[id] = VIEWS[c]);
+// poids pour la note sur 100 ; les tests "critiques" plafonnent l'appréciation
+const WEIGHT = {touch:15, pixels:12, drain:12, speaker:10, mic:10, camera:10, battery:4, brightness:6, gradient:6, multitouch:5,
+  vibrate:5, accel:5, gyro:4, compass:4, gps:5, flash:4, refresh:4, network:3, speed:3, cpu:2, light:3, buttons:3, bluetooth:3, proximity:3};
+const CRITICAL = ['touch','pixels','drain','speaker','mic','camera'];
+const MANUAL = ['drain','speed','cpu','pixels','touch','multitouch','brightness','gradient','refresh','accel','gyro','compass','light','gps','speaker','mic','vibrate','camera','flash'];
+const LABEL = {ok:'OK', ko:'Échec', na:'Non supporté'};
+const COLOR = {ok:'var(--ok)', ko:'var(--ko)', na:'var(--na)'};
+const IDS = Object.keys(TESTS);
+const $ = id => document.getElementById(id);
+const NATIVE = window.Android || null;
+const nat = (fn, ...a) => { if (!NATIVE || typeof NATIVE[fn] !== 'function') return null;
+  try { const r = NATIVE[fn](...a); return (typeof r === 'string' && /^[\[{]/.test(r)) ? JSON.parse(r) : r; } catch(e){ return null; } };
+if (NATIVE) {
+  document.body.classList.add('native');
+  try { Object.defineProperty(navigator, 'vibrate', {value: p => !!nat('vibrate', JSON.stringify(p)), configurable:true}); } catch(e){}
+}
+if (NATIVE) { MANUAL.splice(MANUAL.indexOf('gps')+1, 0, 'proximity'); MANUAL.push('buttons'); }
+const fr = (n, d=1) => n.toFixed(d).replace('.', ',');
+
+let results = {}, info = {}, details = {};
+const DEV = {model:'—', os:'—', browser:'—'};
+let ready = false, restoring = false;
+
+/* ---------- stockage ---------- */
+const store = {
+  get(k, d){ try { const v = localStorage.getItem('diag.'+k); return v==null ? d : JSON.parse(v); } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem('diag.'+k, JSON.stringify(v)); } catch(e){} }
+};
+const settings = store.get('settings', {feedback:true});
+function persist(){ store.set('session', {results, details, at: Date.now()}); }
+
+/* =========================================================
+   ANNEAU, NOTE ET RETOURS
+   ========================================================= */
+(function buildGauge(){
+  const r = 84, C = 2*Math.PI*r, n = IDS.length, gap = 3, len = C/n - gap;
+  $('gaugeSvg').innerHTML = IDS.map((id,k)=>`<circle class="seg" data-seg="${id}" cx="100" cy="100" r="${r}" stroke="var(--line)"
+    stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-k*C/n}"/>`).join('');
+  for (const c in CATS) document.querySelector(`[data-ticks="${c}"]`).innerHTML = CATS[c].map(id=>`<i data-tick="${id}"></i>`).join('');
+})();
+
+function computeGrade(){
+  let got = 0, tot = 0, crit = false, rated = 0;
+  for (const id of IDS) { const r = results[id]; if (r==='ok'||r==='ko') { rated++; tot += WEIGHT[id]; if (r==='ok') got += WEIGHT[id]; else if (CRITICAL.includes(id)) crit = true; } }
+  if (rated < 6) return null;
+  let score = Math.round(100 * got / tot);
+  let label = score>=90 ? 'Très bon état' : score>=75 ? 'Bon état' : score>=55 ? 'État moyen' : 'À réparer';
+  if (crit) { score = Math.min(score, 69); label = 'À réparer'; }
+  return {score, label, color: score>=75 ? 'var(--ok)' : score>=55 ? 'var(--na)' : 'var(--ko)'};
+}
+
+function mark(id, st, opts={}){
+  if (!(id in TESTS)) return;
+  if (results[id] === 'ok' && st === 'na') return;
+  const changed = results[id] !== st;
+  results[id] = st;
+  if (opts.detail) details[id] = opts.detail;
+  document.querySelectorAll(`[data-chip="${id}"]`).forEach(c => { c.className = 'pill ' + st; c.textContent = LABEL[st]; });
+  const det = document.querySelector(`details [data-chip="${id}"]`)?.closest('details');
+  if (det) det.querySelectorAll('.yes,.no').forEach(b => b.classList.toggle('sel', (b.classList.contains('yes') && st==='ok') || (b.classList.contains('no') && st==='ko')));
+  updateScore();
+  if (!restoring) { persist(); if (changed && ready && st!=='na') feedback(st); }
+  if (guide.on && guide.queue[guide.i] === id) guideNext(900);
+}
+
+function updateScore(){
+  const done = IDS.filter(id => results[id]).length;
+  const ko = IDS.filter(id => results[id]==='ko').length;
+  $('gNum').innerHTML = `${done}<small>/${IDS.length}</small>`;
+  $('gTxt').textContent = ko ? `${ko} problème${ko>1?'s':''} trouvé${ko>1?'s':''}` : done===IDS.length ? 'tout est passé' : 'tests effectués';
+  $('gTxt').style.color = ko ? 'var(--ko)' : '';
+  IDS.forEach(id => {
+    const col = COLOR[results[id]] || 'var(--line)';
+    document.querySelector(`[data-seg="${id}"]`).setAttribute('stroke', col);
+    document.querySelector(`[data-tick="${id}"]`).style.background = col;
+  });
+  for (const c in CATS) { const d = CATS[c].filter(id=>results[id]).length; document.querySelector(`[data-count="${c}"]`).textContent = `${d}/${CATS[c].length}`; }
+  const g = computeGrade();
+  $('homeGrade').classList.toggle('on', !!g);
+  if (g) { $('hgNum').innerHTML = `${g.score}<small>/100</small>`; $('hgNum').style.color = g.color; $('hgLbl').textContent = g.label; }
+  const left = guideQueue().length;
+  $('startLbl').innerHTML = done===0 || left===MANUAL.length ? 'Lancer le test complet' : left ? `Continuer <small>(${left} test${left>1?'s':''} restant${left>1?'s':''})</small>` : 'Refaire un test complet';
+}
+
+let actx;
+function audio(){ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); actx.resume?.(); return actx; }
+function beep(freqs, dur=.12){
+  try { const a = audio(); freqs.forEach((f,k)=>{ const o=a.createOscillator(), g=a.createGain(), t=a.currentTime+k*dur;
+    o.type='sine'; o.frequency.value=f; g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.18,t+.02); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.connect(g).connect(a.destination); o.start(t); o.stop(t+dur+.02); }); } catch(e){}
+}
+function feedback(st){
+  if (!settings.feedback) return;
+  if (st==='ok') { beep([880,1320]); navigator.vibrate?.(30); }
+  else { beep([330,220], .16); navigator.vibrate?.([60,60,60]); }
+}
+function toggleFeedback(){
+  settings.feedback = !settings.feedback; store.set('settings', settings);
+  $('fbBtn').classList.toggle('off', !settings.feedback);
+  toast(settings.feedback ? 'Sons et vibrations activés' : 'Sons et vibrations coupés');
+}
+
+function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('on'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('on'),2400); }
+function rows(id, obj){ $(id).innerHTML = Object.entries(obj).map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join(''); Object.assign(info, obj); }
+const fmtBytes = b => b==null ? '—' : b>=1e9 ? fr(b/1e9)+' Go' : b>=1e6 ? Math.round(b/1e6)+' Mo' : Math.max(1,Math.round(b/1e3))+' Ko';
+
+/* ---------- navigation ---------- */
+function go(v){
+  document.querySelectorAll('.view').forEach(x => x.classList.toggle('on', x.id===v));
+  if (v==='v-report') buildReport();
+  window.scrollTo(0,0);
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
+
+/* =========================================================
+   MODE TEST COMPLET
+   ========================================================= */
+const guide = {on:false, queue:[], i:0, t:null};
+function guideQueue(){ return MANUAL.filter(id => !results[id]); }
+function startGuide(){
+  let q = guideQueue();
+  if (!q.length) { resetManual(); q = guideQueue(); }
+  guide.on = true; guide.queue = q.filter(id => id!=='drain'); guide.i = 0;
+  document.body.classList.add('guiding'); $('guide').classList.add('on');
+  if (q.includes('drain')) setTimeout(()=>testDrain(true), 300);
+  showStep();
+}
+function showStep(){
+  clearTimeout(guide.t);
+  document.querySelectorAll('details.test.current').forEach(d => d.classList.remove('current'));
+  while (guide.i < guide.queue.length && results[guide.queue[guide.i]]) guide.i++;
+  if (guide.i >= guide.queue.length) return finishGuide();
+  const id = guide.queue[guide.i];
+  $('gdStep').textContent = `${guide.i+1} sur ${guide.queue.length}`;
+  $('gdName').textContent = TESTS[id];
+  $('gdBar').style.width = (guide.i / guide.queue.length * 100) + '%';
+  const v = VIEW_OF[id];
+  if (!document.getElementById(v).classList.contains('on')) go(v);
+  document.querySelectorAll(`#${v} details.test`).forEach(d => d.open = false);
+  const det = document.querySelector(`#${v} details [data-chip="${id}"]`).closest('details');
+  det.open = true; det.classList.add('current');
+  setTimeout(() => det.scrollIntoView({behavior:'smooth', block:'start'}), 80);
+  // lancements automatiques
+  if (['accel','gyro','compass','light','proximity'].includes(id)) startSensors();
+  if (id==='speed') testSpeed();
+  if (id==='cpu') testCPU();
+  if (id==='refresh') testRefresh();
+  if (id==='gps') testGPS();
+}
+function guideNext(delay=0){ clearTimeout(guide.t); guide.t = setTimeout(()=>{ guide.i++; showStep(); }, delay); }
+function guideSkip(){ guideNext(0); }
+function stopGuide(){
+  guide.on = false; clearTimeout(guide.t);
+  document.body.classList.remove('guiding'); $('guide').classList.remove('on');
+  document.querySelectorAll('details.test.current').forEach(d => d.classList.remove('current'));
+}
+function finishGuide(){
+  stopGuide();
+  saveHistory(false);
+  go('v-report');
+  toast(drain.running ? 'Test complet terminé. La mesure de batterie continue.' : 'Test complet terminé');
+}
+
+/* =========================================================
+   SYSTÈME
+   ========================================================= */
+function parseUA(){
+  const ua = navigator.userAgent; let m;
+  if ((m = ua.match(/Android\s([\d.]+)/))) { DEV.os = 'Android ' + m[1]; const mm = ua.match(/Android[^;]*;\s*([^;)]+?)(?:\sBuild|\))/); if (mm && mm[1].trim()!=='K') DEV.model = mm[1].trim(); }
+  else if ((m = ua.match(/OS (\d+[_\d]*) like Mac/))) { DEV.os = 'iOS ' + m[1].replace(/_/g,'.'); DEV.model = /iPad/.test(ua)?'iPad':'iPhone'; }
+  else if (/Windows/.test(ua)) DEV.os='Windows'; else if (/Mac OS X/.test(ua)) DEV.os='macOS'; else if (/Linux/.test(ua)) DEV.os='Linux';
+  DEV.browser = /EdgA?\//.test(ua)?'Edge':/SamsungBrowser/.test(ua)?'Samsung Internet':/Firefox|FxiOS/.test(ua)?'Firefox':/CriOS|Chrome/.test(ua)?'Chrome':/Safari/.test(ua)?'Safari':'Autre';
+}
+let battery = null;
+async function initSystem(){
+  parseUA();
+  if (navigator.userAgentData?.getHighEntropyValues) {
+    try { const h = await navigator.userAgentData.getHighEntropyValues(['model','platformVersion']);
+      if (h.model) DEV.model = h.model; if (h.platformVersion && /Android/.test(DEV.os)) DEV.os = 'Android ' + h.platformVersion.split('.')[0]; } catch(e){}
+  }
+  const nd = nat('device');
+  if (nd) {
+    const brand = nd.brand ? nd.brand[0].toUpperCase() + nd.brand.slice(1) : '';
+    DEV.model = nd.model.toLowerCase().startsWith((nd.brand||'').toLowerCase()) ? nd.model : `${brand} ${nd.model}`;
+    DEV.os = 'Android ' + nd.android; DEV.browser = 'Appli Phone Medic';
+    DEV.soc = nd.soc; DEV.patch = nd.securityPatch;
+  }
+  $('devName').textContent = DEV.model !== '—' ? DEV.model : DEV.os;
+  rows('devTable', {
+    'Modèle': DEV.model, 'Système': DEV.os, 'Navigateur': DEV.browser,
+    'Définition': `${Math.round(screen.width*devicePixelRatio)} × ${Math.round(screen.height*devicePixelRatio)}`,
+    'Densité': '×' + (+devicePixelRatio.toFixed(2)),
+    'Couleurs': screen.colorDepth + ' bits',
+    'Cœurs processeur': navigator.hardwareConcurrency || '—',
+    'Points tactiles': navigator.maxTouchPoints || 0,
+    ...(DEV.soc ? {'Puce': DEV.soc} : {}),
+    ...(DEV.patch ? {'Correctif de sécurité': new Date(DEV.patch).toLocaleDateString('fr-FR',{month:'long',year:'numeric'})} : {})
+  });
+  $('maxTP').textContent = navigator.maxTouchPoints || '—';
+  const nm = nat('memory'), ns = nat('storage');
+  let mem;
+  if (nm && nm.total) {
+    mem = { 'RAM': fmtBytes(nm.total), 'RAM disponible': fmtBytes(nm.available) + (nm.low ? ' (saturée)' : '') };
+    if (ns && ns.total) mem['Stockage'] = `${fmtBytes(ns.total - ns.free)} utilisés sur ${fmtBytes(ns.total)}`;
+  } else {
+    mem = { 'RAM': navigator.deviceMemory ? 'au moins ' + navigator.deviceMemory + ' Go' : 'Non communiquée' };
+    if (navigator.storage?.estimate) { try { const e = await navigator.storage.estimate(); mem['Espace du navigateur'] = fmtBytes(e.quota); } catch(e){} }
+  }
+  rows('memTable', mem);
+
+  const updNet = () => {
+    const c = navigator.connection || {};
+    const o = { 'État': navigator.onLine ? 'En ligne' : 'Hors ligne' };
+    if (c.type) o['Type'] = {wifi:'Wi-Fi', cellular:'Mobile', ethernet:'Câble', none:'Aucune'}[c.type] || c.type;
+    if (c.effectiveType) o['Qualité'] = c.effectiveType.toUpperCase();
+    if (c.rtt != null) o['Latence estimée'] = c.rtt + ' ms';
+    rows('netTable', o);
+    mark('network', navigator.onLine ? 'ok' : 'ko');
+  };
+  updNet(); addEventListener('online', updNet); addEventListener('offline', updNet); navigator.connection?.addEventListener?.('change', updNet);
+
+  if (NATIVE || navigator.getBattery) {
+    try {
+      battery = NATIVE ? nativeBattery() : await navigator.getBattery();
+      const b = battery;
+      const t = s => (s===Infinity||isNaN(s)||!s) ? null : `${Math.floor(s/3600)} h ${String(Math.round(s%3600/60)).padStart(2,'0')}`;
+      const upd = () => {
+        const pct = Math.round(b.level*100);
+        $('batLevel').textContent = pct + ' %';
+        const f = $('batFill'); f.style.height = `calc((100% - 8px) * ${pct/100})`;
+        f.style.background = pct<20?'var(--ko)':pct<50?'var(--na)':'var(--ok)';
+        const rest = b.charging ? t(b.chargingTime) : t(b.dischargingTime);
+        $('batState').textContent = b.charging ? (rest ? `En charge, pleine dans ${rest}` : 'En charge') : (rest ? `Environ ${rest} d'autonomie` : 'Sur batterie');
+        Object.assign(info, {'Batterie': pct+' %', 'En charge': b.charging ? 'Oui' : 'Non'});
+        if (drain.running) $('drNow').textContent = pct + ' %';
+      };
+      upd(); ['levelchange','chargingchange','chargingtimechange','dischargingtimechange'].forEach(ev => b.addEventListener(ev, upd));
+      mark('battery', batVerdict.st, {detail: batVerdict.detail});
+    } catch(e){ batteryNA(); }
+  } else batteryNA();
+
+  const nb = nat('bluetooth');
+  if (nb) {
+    const t = {enabled:['Bluetooth présent et activé.','ok'], disabled:['Bluetooth présent, actuellement désactivé.','ok'], present:['Bluetooth présent.','ok'], absent:['Ce téléphone n\'a pas de Bluetooth.','na'], unknown:['Impossible de vérifier le Bluetooth.','na']}[nb] || ['Impossible de vérifier le Bluetooth.','na'];
+    $('btInfo').textContent = t[0]; mark('bluetooth', t[1]);
+  } else if (navigator.bluetooth?.getAvailability) {
+    navigator.bluetooth.getAvailability().then(a => { $('btInfo').textContent = a ? 'Un adaptateur Bluetooth est présent.' : 'Aucun adaptateur Bluetooth disponible. Vérifie qu\'il est activé.'; mark('bluetooth', a?'ok':'ko'); })
+      .catch(()=>{ $('btInfo').textContent='Le navigateur n\'a pas pu vérifier le Bluetooth.'; mark('bluetooth','na'); });
+  } else { $('btInfo').textContent = 'Ce navigateur ne permet pas de vérifier le Bluetooth. Ce sera possible dans l\'APK.'; mark('bluetooth','na'); }
+}
+function batteryNA(){ $('batLevel').textContent='—'; $('batState').textContent='Ce navigateur ne donne pas accès à la batterie. Essaie Chrome sur Android.'; mark('battery','na'); mark('drain','na'); $('drRes').textContent='Mesure impossible sans accès à la batterie.'; }
+
+/* --- usure batterie --- */
+const drain = {running:false, start:0, t0:0, timer:null};
+const DRAIN_SEC = 300;
+function testDrain(fromGuide){
+  if (!battery) { if (!fromGuide) toast('Batterie non accessible'); return; }
+  if (drain.running) return;
+  if (battery.charging) { $('drRes').textContent = 'Débranche le chargeur, puis relance la mesure.'; if (!fromGuide) toast('Débranche le chargeur d\'abord'); return; }
+  drain.running = true; drain.start = battery.level; drain.t0 = Date.now(); drain.cc0 = battery.raw?.chargeCounter || 0;
+  nat('keepScreenOn', true);
+  $('drStart').textContent = Math.round(drain.start*100)+' %'; $('drNow').textContent = Math.round(drain.start*100)+' %';
+  $('drBtn').disabled = true; $('drBtn').textContent = 'Mesure en cours…'; $('drRes').textContent = '';
+  let wake; try { navigator.wakeLock?.request('screen').then(w=>wake=w).catch(()=>{}); } catch(e){}
+  if (fromGuide) toast('Mesure de la batterie lancée en arrière-plan (5 min)');
+  drain.timer = setInterval(() => {
+    const el = (Date.now()-drain.t0)/1000, left = Math.max(0, DRAIN_SEC-el);
+    $('drLeft').textContent = `${Math.floor(left/60)}:${String(Math.floor(left%60)).padStart(2,'0')}`;
+    if (battery.charging) { clearInterval(drain.timer); drain.running=false; nat('keepScreenOn', false); $('drBtn').disabled=false; $('drBtn').textContent='Mesurer pendant 5 minutes'; $('drRes').textContent='Mesure annulée : le chargeur a été branché.'; wake?.release?.(); return; }
+    if (left <= 0) {
+      clearInterval(drain.timer); drain.running = false; wake?.release?.(); nat('keepScreenOn', false);
+      let lost = (drain.start - battery.level)*100, precise = false;
+      const cc1 = nat('battery')?.chargeCounter || 0;
+      if (drain.cc0 > 0 && cc1 > 0 && drain.cc0 >= cc1 && drain.start > 0) { lost = (drain.cc0 - cc1) / (drain.cc0 / drain.start) * 100; precise = true; }
+      const perH = lost / (el/3600);
+      const txt = !precise && lost < 1 ? 'moins de 12 % par heure' : `environ ${Math.round(perH)} % par heure`;
+      const st = lost < 1 || perH <= 25 ? 'ok' : 'ko';
+      $('drRes').textContent = `Consommation écran allumé : ${txt}. ${st==='ok' ? 'C\'est normal.' : 'C\'est élevé : la batterie est probablement usée.'}`;
+      $('drBtn').disabled = false; $('drBtn').textContent = 'Refaire la mesure';
+      info['Consommation batterie'] = txt;
+      mark('drain', st, {detail: txt});
+    }
+  }, 1000);
+}
+
+/* --- débit --- */
+async function testSpeed(){
+  const btn = $('spBtn'); if (btn.disabled) return;
+  if (!navigator.onLine) { mark('speed','ko',{detail:'Hors ligne'}); return toast('Pas de connexion internet'); }
+  btn.disabled = true; btn.textContent = 'Mesure en cours…';
+  const base = 'https://speed.cloudflare.com/';
+  try {
+    const pings = [];
+    for (let k=0;k<5;k++){ const t=performance.now(); await fetch(base+'__down?bytes=0&r='+Math.random(),{cache:'no-store'}); pings.push(performance.now()-t); }
+    pings.sort((a,b)=>a-b); const ping = Math.round(pings[2]);
+    $('spPing').textContent = ping+' ms';
+    let t = performance.now(); const r = await fetch(base+'__down?bytes=10000000&r='+Math.random(),{cache:'no-store'}); const buf = await r.arrayBuffer();
+    const down = buf.byteLength*8/((performance.now()-t)/1000)/1e6;
+    $('spDown').textContent = fr(down, down<10?1:0)+' Mb/s';
+    const payload = new Uint8Array(3e6);
+    t = performance.now(); await fetch(base+'__up',{method:'POST',body:payload,cache:'no-store'});
+    const up = payload.byteLength*8/((performance.now()-t)/1000)/1e6;
+    $('spUp').textContent = fr(up, up<10?1:0)+' Mb/s';
+    const d = `${fr(down,1)} Mb/s en réception, ${fr(up,1)} Mb/s en envoi, ping ${ping} ms`;
+    info['Débit'] = d;
+    mark('speed', down >= 2 ? 'ok' : 'ko', {detail:d});
+  } catch(e){
+    toast('Serveur de test injoignable'); mark('speed','na',{detail:'Serveur injoignable'});
+  }
+  btn.disabled = false; btn.textContent = 'Refaire la mesure';
+}
+
+/* --- benchmark --- */
+async function testCPU(){
+  const btn = $('cpuBtn'); if (btn.disabled) return;
+  btn.disabled = true; btn.textContent = 'Calcul en cours…';
+  const code = `onmessage=e=>{const end=performance.now()+e.data;let n=0,x=0;while(performance.now()<end){for(let i=0;i<20000;i++){x+=Math.sqrt(i+n)*1.0001%3}n++}postMessage(n)}`;
+  const url = URL.createObjectURL(new Blob([code],{type:'text/javascript'}));
+  const run = (count, ms) => Promise.all(Array.from({length:count}, () => new Promise((res,rej) => {
+    const w = new Worker(url); w.onmessage = e => { res(e.data); w.terminate(); }; w.onerror = rej; w.postMessage(ms);
+  })));
+  try {
+    const single = Math.round((await run(1,2000))[0] / 2);
+    $('cpuSingle').textContent = single.toLocaleString('fr-FR');
+    const cores = navigator.hardwareConcurrency || 4;
+    const multi = Math.round((await run(cores,2000)).reduce((a,b)=>a+b,0) / 2);
+    $('cpuMulti').textContent = multi.toLocaleString('fr-FR');
+    const d = `${single.toLocaleString('fr-FR')} sur 1 cœur, ${multi.toLocaleString('fr-FR')} sur ${cores} cœurs`;
+    info['Score performances'] = d;
+    mark('cpu','ok',{detail:d});
+  } catch(e){ toast('Benchmark impossible sur ce navigateur'); mark('cpu','na'); }
+  URL.revokeObjectURL(url);
+  btn.disabled = false; btn.textContent = 'Relancer le benchmark';
+}
+
+/* =========================================================
+   ÉCRAN
+   ========================================================= */
+const ov = $('overlay');
+function openOverlay(html, bg){
+  ov.innerHTML = '<button class="closeBtn" id="ovClose">Fermer</button>' + html;
+  ov.style.background = bg || '#000';
+  ov.classList.add('on');
+  $('ovClose').onclick = e => { e.stopPropagation(); closeOverlay(); };
+  $('ovClose').addEventListener('touchstart', e => e.stopPropagation(), {passive:true});
+  try { document.documentElement.requestFullscreen?.().catch(()=>{}); } catch(e){}
+}
+function closeOverlay(){
+  ov.classList.remove('on'); ov.innerHTML=''; ov.onclick=ov.onmousedown=ov.onmousemove=ov.onmouseup=null; ov.ontouchstart=ov.ontouchmove=ov.ontouchend=null;
+  try { if (document.fullscreenElement) document.exitFullscreen(); } catch(e){}
+  if (ov._done) { const d = ov._done; ov._done=null; d(); }
+}
+function startPixels(){
+  const colors = ['#ff0000','#00ff00','#0000ff','#ffffff','#000000','#808080'];
+  const names = ['Rouge','Vert','Bleu','Blanc','Noir','Gris'];
+  let i = 0;
+  openOverlay('<div class="msg" id="pxMsg"></div>', colors[0]);
+  const show = () => { ov.style.background = colors[i]; $('pxMsg').textContent = `${names[i]}, ${i+1} sur ${colors.length}. Touche pour continuer`; };
+  show();
+  ov.onclick = () => { i++; if (i>=colors.length) closeOverlay(); else show(); };
+}
+function startBrightness(){ openOverlay('<div class="msg">Touche pour fermer</div>', '#ffffff'); ov.onclick = closeOverlay; }
+function startGradient(){ openOverlay('<div class="msg">Touche pour fermer</div>', 'linear-gradient(90deg,#000,#fff)'); ov.onclick = closeOverlay; }
+function startTouch(){
+  const cols = 8, rowsN = Math.round(8 * innerHeight / innerWidth);
+  let html = `<div id="touchGrid" style="grid-template-columns:repeat(${cols},1fr);grid-template-rows:repeat(${rowsN},1fr)">`;
+  for (let k=0;k<cols*rowsN;k++) html += '<div></div>';
+  html += '</div><div class="msg" id="tMsg">0 %</div>';
+  openOverlay(html, '#14213D');
+  const cells = ov.querySelectorAll('#touchGrid div').length;
+  let hit = 0, finished = false;
+  const touch = (x,y) => {
+    const el = document.elementFromPoint(x,y);
+    if (el && el.parentElement?.id==='touchGrid' && !el.classList.contains('hit')) {
+      el.classList.add('hit'); hit++;
+      $('tMsg').textContent = Math.round(hit/cells*100) + ' %';
+      if (hit === cells && !finished) { finished = true; setTimeout(closeOverlay, 500); }
+    }
+  };
+  ov.ontouchstart = ov.ontouchmove = e => { e.preventDefault(); for (const t of e.touches) touch(t.clientX, t.clientY); };
+  let down=false; ov.onmousedown=e=>{down=true;touch(e.clientX,e.clientY)}; ov.onmousemove=e=>{if(down)touch(e.clientX,e.clientY)}; ov.onmouseup=()=>down=false;
+  ov._done = () => {
+    if (finished) { mark('touch','ok'); toast('Toute la surface tactile répond'); }
+    else if (hit>0) toast(`Grille remplie à ${Math.round(hit/cells*100)} %. Relance-la, ou signale une zone morte.`);
+  };
+}
+function startMulti(){
+  openOverlay('<div class="msg" id="mMsg">Pose plusieurs doigts</div>', '#14213D');
+  let max = 0;
+  const draw = e => {
+    e.preventDefault();
+    ov.querySelectorAll('.dot').forEach(d=>d.remove());
+    const hues=[225,150,350,45,280,190,20,320,95,250];
+    [...e.touches].forEach((t,k)=>{ const d=document.createElement('div'); d.className='dot'; d.style.left=t.clientX+'px'; d.style.top=t.clientY+'px'; d.style.borderColor=`hsl(${hues[k%10]},90%,65%)`; ov.appendChild(d); });
+    max = Math.max(max, e.touches.length);
+    $('mMsg').textContent = `${e.touches.length} doigt${e.touches.length>1?'s':''}, maximum ${max}`;
+  };
+  ov.ontouchstart = ov.ontouchmove = ov.ontouchend = draw;
+  ov._done = () => { if (max>0) { info['Multi-touch mesuré'] = max + ' points'; mark('multitouch', max>=2?'ok':'ko', {detail: max+' points'}); } };
+}
+function testRefresh(){
+  const btn = $('hzBtn'); if (btn.disabled) return;
+  btn.disabled = true; btn.textContent = 'Mesure en cours…';
+  const ball = $('hzBall'), W = ball.parentElement.clientWidth - 28;
+  const iv = []; let last = null; const t0 = performance.now();
+  const step = ts => {
+    if (last != null) iv.push(ts - last); last = ts;
+    const p = ((ts - t0) / 1200) % 2; ball.style.transform = `translateX(${(p<1?p:2-p)*W}px)`;
+    if (ts - t0 < 3000) return requestAnimationFrame(step);
+    const s = [...iv].sort((a,b)=>a-b), med = s[Math.floor(s.length/2)];
+    const raw = 1000/med, std = [30,48,60,75,90,120,144,165,240].reduce((a,b)=>Math.abs(b-raw)<Math.abs(a-raw)?b:a);
+    const hz = Math.abs(std-raw) < 4 ? std : Math.round(raw);
+    const drops = iv.filter(x => x > med*1.6).length, pct = drops/iv.length*100;
+    $('hzVal').textContent = hz+' Hz'; $('hzDrop').textContent = drops + (drops ? ` (${fr(pct)} %)` : '');
+    const d = `${hz} Hz, ${drops} image${drops>1?'s':''} perdue${drops>1?'s':''}`;
+    info['Fluidité'] = d;
+    mark('refresh', hz >= 50 && pct < 5 ? 'ok' : 'ko', {detail:d});
+    btn.disabled = false; btn.textContent = 'Refaire la mesure';
+  };
+  requestAnimationFrame(step);
+}
+
+/* =========================================================
+   CAPTEURS
+   ========================================================= */
+let sensorsOn = false;
+async function startSensors(){
+  if (sensorsOn) return;
+  try {
+    if (typeof DeviceMotionEvent!=='undefined' && DeviceMotionEvent.requestPermission) { const r = await DeviceMotionEvent.requestPermission(); if (r!=='granted') throw 0; }
+    if (typeof DeviceOrientationEvent!=='undefined' && DeviceOrientationEvent.requestPermission) { await DeviceOrientationEvent.requestPermission(); }
+  } catch(e){ toast('Accès aux capteurs refusé'); }
+  sensorsOn = true;
+  $('sensBtn').textContent = 'Capteurs activés'; $('sensBtn').style.background = 'var(--ok)';
+  if (!guide.on) document.querySelectorAll('#v-sensors details.test').forEach((d,k)=>{ if (k<3) d.open = true; });
+  const got = {accel:false, gyro:false, compass:false};
+  let rot = 0;
+  addEventListener('devicemotion', e => {
+    const a = e.accelerationIncludingGravity, r = e.rotationRate;
+    if (a && a.x!=null) {
+      $('ax').textContent=fr(a.x,2); $('ay').textContent=fr(a.y,2); $('az').textContent=fr(a.z,2);
+      const k = 6, cx = Math.max(-62,Math.min(62,-a.x*k)), cy = Math.max(-62,Math.min(62,a.y*k));
+      $('bubble').style.transform = `translate(${cx}px,${cy}px)`;
+      const g = Math.hypot(a.x,a.y,a.z);
+      if (!got.accel && g > 7 && g < 13) { got.accel=true; mark('accel','ok',{detail:`gravité ${fr(g,2)} m/s²`}); }
+    }
+    if (r && r.alpha!=null) {
+      $('ga').textContent=r.alpha.toFixed(0); $('gb').textContent=r.beta.toFixed(0); $('gg').textContent=r.gamma.toFixed(0);
+      rot = Math.max(rot, Math.abs(r.alpha)+Math.abs(r.beta)+Math.abs(r.gamma));
+      if (!got.gyro && rot > 60) { got.gyro=true; mark('gyro','ok'); }
+    }
+  });
+  const onOri = e => {
+    const h = e.webkitCompassHeading ?? (e.alpha!=null ? 360 - e.alpha : null);
+    if (h==null) return;
+    $('needle').style.transform = `rotate(${-h}deg)`;
+    $('oa').textContent = Math.round(h)+'°'; $('ob').textContent = Math.round(e.beta)+'°'; $('og').textContent = Math.round(e.gamma)+'°';
+    if (!got.compass) { got.compass=true; mark('compass','ok'); }
+  };
+  if ('ondeviceorientationabsolute' in window) addEventListener('deviceorientationabsolute', onOri); else addEventListener('deviceorientation', onOri);
+  // si aucune donnée n'arrive, le capteur est absent ou bloqué
+  setTimeout(()=>{ if ($('ax').textContent==='—') mark('accel','na'); if ($('ga').textContent==='—') mark('gyro','na'); if (!got.compass) mark('compass','na'); }, 3000);
+
+  if (NATIVE) {
+    if (!nat('startSensor','proximity')) { $('proxTxt').textContent = 'Ce téléphone n\'a pas de capteur de proximité accessible.'; mark('proximity','na'); }
+    if (!nat('startSensor','light')) lightNA();
+  } else if ('AmbientLightSensor' in window) {
+    try { const s = new AmbientLightSensor(); let min=Infinity, max=0;
+      s.onreading = () => { const l = s.illuminance; $('lux').textContent = Math.round(l)+' lux'; min=Math.min(min,l); max=Math.max(max,l);
+        if (max - min > 15 && max > min*1.5) mark('light','ok'); };
+      s.onerror = lightNA; s.start(); }
+    catch(e){ lightNA(); }
+  } else lightNA();
+}
+function lightNA(){ $('lux').textContent='Non lisible'; mark('light','na'); }
+let gpsBusy = false;
+function testGPS(){
+  if (gpsBusy) return;
+  if (!navigator.geolocation) return mark('gps','na');
+  gpsBusy = true;
+  rows('gpsTable', {'État':'Recherche des satellites…'});
+  const t0 = Date.now();
+  navigator.geolocation.getCurrentPosition(p => {
+    gpsBusy = false;
+    const acc = Math.round(p.coords.accuracy);
+    rows('gpsTable', { 'Précision': '± ' + acc + ' m', 'Temps': fr((Date.now()-t0)/1000)+' s', 'Latitude': p.coords.latitude.toFixed(4), 'Longitude': p.coords.longitude.toFixed(4) });
+    delete info['Latitude']; delete info['Longitude'];
+    mark('gps', acc < 100 ? 'ok' : 'ko', {detail:`± ${acc} m`});
+  }, err => { gpsBusy = false; rows('gpsTable', {'Erreur': err.code===1 ? 'Localisation refusée' : 'Position introuvable. Réessaie près d\'une fenêtre.'}); mark('gps', err.code===1?'na':'ko'); },
+  { enableHighAccuracy:true, timeout:20000, maximumAge:0 });
+}
+
+/* =========================================================
+   MATÉRIEL
+   ========================================================= */
+function tone(pan){
+  try {
+    const a = audio(), o = a.createOscillator(), g = a.createGain();
+    o.frequency.value = pan<0 ? 440 : 660;
+    g.gain.setValueAtTime(0.0001, a.currentTime); g.gain.exponentialRampToValueAtTime(0.4, a.currentTime+0.05);
+    g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime+0.9);
+    o.connect(g);
+    if (a.createStereoPanner) { const p = a.createStereoPanner(); p.pan.value = pan; g.connect(p).connect(a.destination); } else g.connect(a.destination);
+    o.start(); o.stop(a.currentTime+1);
+  } catch(e){ toast('Le son ne peut pas être joué'); mark('speaker','na'); }
+}
+function sweep(){
+  try {
+    const a = audio(), o = a.createOscillator(), g = a.createGain(), t = a.currentTime;
+    o.frequency.setValueAtTime(80, t); o.frequency.exponentialRampToValueAtTime(12000, t+7);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.35, t+.2); g.gain.setValueAtTime(.35, t+6.7); g.gain.exponentialRampToValueAtTime(.0001, t+7);
+    o.connect(g).connect(a.destination); o.start(t); o.stop(t+7.05);
+    toast('Balayage de 7 secondes');
+  } catch(e){ toast('Le son ne peut pas être joué'); }
+}
+let micStream, micRAF;
+async function toggleMic(){
+  if (micStream) { micStream.getTracks().forEach(t=>t.stop()); micStream=null; cancelAnimationFrame(micRAF); $('micMeter').style.width='0'; $('micBtn').textContent='Écouter le micro'; return; }
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({audio:true});
+    const a = audio(), an = a.createAnalyser(); an.fftSize = 512; a.createMediaStreamSource(micStream).connect(an);
+    const buf = new Uint8Array(an.fftSize); let loud = 0;
+    const loop = () => { an.getByteTimeDomainData(buf); let s=0; for (const v of buf) s += (v-128)**2; const rms = Math.sqrt(s/buf.length);
+      $('micMeter').style.width = Math.min(100, rms*4)+'%';
+      if (rms > 8) loud++;
+      if (loud === 20 && results.mic !== 'ko') mark('mic','ok');
+      micRAF=requestAnimationFrame(loop); };
+    loop(); $('micBtn').textContent='Arrêter';
+  } catch(e){ toast('Micro refusé ou indisponible'); mark('mic','na'); }
+}
+async function recordMic(){
+  try {
+    if (!window.MediaRecorder) throw 0;
+    const s = micStream || await navigator.mediaDevices.getUserMedia({audio:true});
+    const rec = new MediaRecorder(s), chunks=[];
+    rec.ondataavailable = e => chunks.push(e.data);
+    rec.onstop = () => { const a=$('micPlayback'); a.src = URL.createObjectURL(new Blob(chunks,{type:rec.mimeType})); a.style.display='block'; a.play().catch(()=>{}); if (!micStream) s.getTracks().forEach(t=>t.stop()); };
+    rec.start(); toast('Enregistrement en cours, parle'); setTimeout(()=>rec.stop(), 3000);
+  } catch(e){ toast('Ce navigateur ne peut pas enregistrer'); }
+}
+function testVibrate(){
+  if (!navigator.vibrate) { toast('Ce navigateur ne peut pas faire vibrer'); return mark('vibrate','na'); }
+  navigator.vibrate([400,150,400,150,800]);
+}
+let camStream, torchOn=false;
+async function openCam(facing){
+  stopCam();
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facing}, width:{ideal:1920}}});
+    const v=$('camVideo'); v.srcObject=camStream; v.style.display='block';
+    const st = camStream.getVideoTracks()[0].getSettings?.()||{};
+    const devs = (await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput').length;
+    $('camInfo').textContent = `${facing==='user'?'Caméra avant':'Caméra arrière'}, ${st.width||'?'} × ${st.height||'?'} px. ${devs} caméra${devs>1?'s':''} détectée${devs>1?'s':''}.`;
+    info['Caméras détectées'] = devs;
+  } catch(e){ $('camInfo').textContent='Caméra inaccessible : autorisation refusée ou matériel absent.'; mark('camera','na'); }
+}
+function stopCam(){ if (camStream) camStream.getTracks().forEach(t=>t.stop()); camStream=null; torchOn=false; $('camVideo').style.display='none'; }
+async function toggleTorch(){
+  if (NATIVE) {
+    stopCam(); torchOn = !torchOn;
+    if (!nat('torch', torchOn)) { torchOn = false; toast('Ce téléphone n\'a pas de flash pilotable'); mark('flash','na'); }
+    return;
+  }
+  try {
+    if (!camStream) await openCam('environment');
+    const tr = camStream.getVideoTracks()[0], caps = tr.getCapabilities?.() || {};
+    if (!caps.torch) { toast('Ce navigateur ne peut pas piloter le flash'); return mark('flash','na'); }
+    torchOn = !torchOn; await tr.applyConstraints({advanced:[{torch:torchOn}]});
+  } catch(e){ toast('Flash indisponible'); mark('flash','na'); }
+}
+const seenKeys = new Set();
+addEventListener('keydown', e => {
+  const k = {AudioVolumeUp:'Volume +',AudioVolumeDown:'Volume −',VolumeUp:'Volume +',VolumeDown:'Volume −',Power:'Marche',GoBack:'Retour',BrowserBack:'Retour'}[e.key] || e.key;
+  seenKeys.add(k); $('keys').innerHTML = [...seenKeys].map(x=>`<span>${x}</span>`).join('');
+  if (!NATIVE || (seenKeys.has('Volume +') && seenKeys.has('Volume −'))) mark('buttons','ok');
+});
+
+/* =========================================================
+   RAPPORT, PARTAGE ET HISTORIQUE
+   ========================================================= */
+const fmtDate = d => d.toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}) + ', ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+const devLabel = () => DEV.model!=='—' ? DEV.model : 'Mon téléphone';
+function verdictText(){
+  const ko = IDS.filter(id=>results[id]==='ko').map(id=>TESTS[id]);
+  const left = MANUAL.filter(id=>!results[id]).length;
+  if (ko.length) return {cls:'bad', txt:`À vérifier : ${ko.join(', ')}.`};
+  if (left) return {cls:'wait', txt:`Aucun problème pour l'instant. Il reste ${left} test${left>1?'s':''} à faire.`};
+  return {cls:'good', txt:'Aucun problème trouvé.'};
+}
+function buildReport(){
+  const date = fmtDate(new Date());
+  $('repDate').textContent = date; $('repDevice').textContent = devLabel(); $('repOs').textContent = DEV.os;
+  const g = computeGrade();
+  $('repNum').innerHTML = g ? `${g.score}<small>/100</small>` : '—';
+  $('repNum').style.color = g ? g.color : '';
+  $('repLbl').textContent = g ? g.label : 'Fais au moins 6 tests pour obtenir une note';
+  const v = verdictText(); $('repVerdict').className = 'verdict ' + v.cls; $('repVerdict').textContent = v.txt;
+  $('repList').innerHTML = IDS.map(id => `<li><span>${TESTS[id]}</span>${details[id]?`<em>${details[id]}</em>`:''}<span class="pill ${results[id]||''}">${results[id]?LABEL[results[id]]:'À faire'}</span></li>`).join('');
+  let t = `PHONE MEDIC, RAPPORT DE DIAGNOSTIC\n${date}\n${devLabel()} (${DEV.os})\n`;
+  if (g) t += `Note : ${g.score}/100, ${g.label}\n`;
+  t += '\n';
+  for (const [k,val] of Object.entries(info)) t += `${k} : ${val}\n`;
+  t += `\nRÉSULTATS\n`;
+  for (const id of IDS) t += `${results[id]==='ok'?'[OK]':results[id]==='ko'?'[ÉCHEC]':results[id]==='na'?'[N/A]':'[  ]'} ${TESTS[id]}${details[id]?' : '+details[id]:''}\n`;
+  t += `\n${v.txt}\n`;
+  $('reportTxt').value = t;
+  renderHistory();
+}
+async function copyReport(){
+  buildReport();
+  if (NATIVE) { nat('copy', $('reportTxt').value); return toast('Rapport copié'); }
+  try { await navigator.clipboard.writeText($('reportTxt').value); toast('Rapport copié'); }
+  catch(e){ const ta=$('reportTxt'); ta.select(); try{ document.execCommand('copy'); toast('Rapport copié'); }catch(_){ toast('La copie a échoué'); } }
+}
+
+async function drawReport(){
+  try { await document.fonts.ready; } catch(e){}
+  const S = 2, W = 540, pad = 32, rowH = 34;
+  const H = 300 + IDS.length*rowH + 60;
+  const c = document.createElement('canvas'); c.width = W*S; c.height = H*S;
+  const x = c.getContext('2d'); x.scale(S,S);
+  const DF = '"Bricolage Grotesque", Figtree, system-ui, sans-serif', BF = 'Figtree, system-ui, sans-serif';
+  const col = {ok:'#17955A', ko:'#D7263D', na:'#C27A00', none:'#A9B3C2'}, soft = {ok:'#DDF3E8', ko:'#FBE1E4', na:'#FBEFD6', none:'#F3F5F8'};
+  x.fillStyle = '#E9EDF2'; x.fillRect(0,0,W,H);
+  const rr = (X,Y,w,h,r) => { x.beginPath(); x.roundRect ? x.roundRect(X,Y,w,h,r) : x.rect(X,Y,w,h); };
+  x.fillStyle = '#fff'; rr(16,16,W-32,H-32,22); x.fill();
+  x.fillStyle = '#5E6B82'; x.font = `500 14px ${BF}`; x.fillText('Phone Medic, rapport de diagnostic', pad+4, 58);
+  x.fillStyle = '#14213D'; x.font = `800 28px ${DF}`; x.fillText(devLabel(), pad+4, 92);
+  x.fillStyle = '#5E6B82'; x.font = `400 14px ${BF}`; x.fillText(`${DEV.os}, ${fmtDate(new Date())}`, pad+4, 116);
+  const g = computeGrade();
+  x.fillStyle = g ? (g.score>=75?col.ok:g.score>=55?col.na:col.ko) : '#14213D';
+  x.font = `800 72px ${DF}`; const sc = g ? String(g.score) : '—'; x.fillText(sc, pad+2, 200);
+  const sw = x.measureText(sc).width;
+  x.fillStyle = '#5E6B82'; x.font = `500 22px ${DF}`; x.fillText('/100', pad+6+sw, 200);
+  x.fillStyle = '#14213D'; x.font = `700 20px ${DF}`; x.fillText(g ? g.label : 'Note incomplète', pad+100+sw, 190);
+  const v = verdictText();
+  x.fillStyle = v.cls==='bad'?soft.ko:v.cls==='good'?soft.ok:soft.none; rr(pad,222,W-pad*2,44,12); x.fill();
+  x.fillStyle = v.cls==='bad'?col.ko:v.cls==='good'?col.ok:'#5E6B82'; x.font = `600 14px ${BF}`;
+  let vt = v.txt; while (x.measureText(vt).width > W-pad*2-28 && vt.length>4) vt = vt.slice(0,-2); if (vt!==v.txt) vt = vt.trimEnd()+'…';
+  x.fillText(vt, pad+14, 249);
+  let y = 296;
+  for (const id of IDS) {
+    const r = results[id] || 'none';
+    x.fillStyle = '#14213D'; x.font = `500 15px ${BF}`; x.fillText(TESTS[id], pad+4, y+6);
+    const lbl = r==='none' ? 'À faire' : LABEL[r];
+    x.font = `600 12px ${BF}`; const lw = x.measureText(lbl).width + 20;
+    x.fillStyle = soft[r]; rr(W-pad-lw, y-12, lw, 24, 12); x.fill();
+    x.fillStyle = r==='none' ? '#5E6B82' : col[r]; x.fillText(lbl, W-pad-lw+10, y+4);
+    x.strokeStyle = '#E3E7ED'; x.beginPath(); x.moveTo(pad,y+rowH/2); x.lineTo(W-pad,y+rowH/2); x.stroke();
+    y += rowH;
+  }
+  return new Promise(res => c.toBlob(res, 'image/png'));
+}
+async function shareImage(){
+  buildReport();
+  const blob = await drawReport();
+  if (NATIVE) {
+    const b64 = await new Promise(r => { const fr2 = new FileReader(); fr2.onload = () => r(String(fr2.result).split(',')[1]); fr2.readAsDataURL(blob); });
+    if (nat('shareImage', b64)) return;
+  }
+  const file = new File([blob], `phone-medic-${new Date().toISOString().slice(0,10)}.png`, {type:'image/png'});
+  try {
+    if (navigator.canShare?.({files:[file]})) { await navigator.share({files:[file], title:'Rapport de diagnostic'}); return; }
+  } catch(e){ if (e.name==='AbortError') return; }
+  $('sheetImg').src = URL.createObjectURL(blob); $('sheet').classList.add('on');
+}
+
+function saveHistory(manual){
+  const g = computeGrade();
+  if (!Object.keys(results).length) return manual && toast('Aucun résultat à enregistrer');
+  const h = store.get('history', []);
+  h.unshift({at: Date.now(), model: devLabel(), score: g?.score ?? null, label: g?.label ?? null, results: {...results}, details: {...details}});
+  store.set('history', h.slice(0, 20));
+  renderHistory();
+  if (manual) toast('Enregistré dans l\'historique');
+}
+function renderHistory(){
+  const h = store.get('history', []);
+  if (!h.length) { $('histList').innerHTML = '<p class="hist-empty">Aucun diagnostic enregistré. Le test complet s\'enregistre tout seul à la fin.</p>'; return; }
+  $('histList').innerHTML = h.map((e,k) => {
+    const changes = IDS.filter(id => e.results[id] && results[id] && e.results[id] !== results[id])
+      .map(id => `<li>${TESTS[id]} : ${LABEL[e.results[id]]} → ${LABEL[results[id]]} aujourd'hui</li>`);
+    const ko = IDS.filter(id => e.results[id]==='ko').map(id=>TESTS[id]);
+    return `<details class="hist-item"><summary><span class="d">${fmtDate(new Date(e.at))}<small>${e.label || 'Note incomplète'}${ko.length?`, ${ko.length} problème${ko.length>1?'s':''}`:''}</small></span>
+      <span class="s">${e.score ?? '—'}</span><svg class="i" style="color:var(--faint)"><use href="#i-chev"/></svg></summary>
+      <ul>${ko.length ? `<li>Problèmes : ${ko.join(', ')}</li>` : '<li>Aucun problème</li>'}${changes.length ? changes.join('') : '<li>Aucun changement par rapport à maintenant</li>'}${e.details?.cpu?`<li>Performances : ${e.details.cpu}</li>`:''}${e.details?.drain?`<li>Batterie : ${e.details.drain}</li>`:''}</ul>
+      <button class="link-btn" onclick="delHistory(${k})">Supprimer</button></details>`;
+  }).join('');
+}
+function delHistory(k){ const h = store.get('history', []); h.splice(k,1); store.set('history', h); renderHistory(); }
+
+function resetManual(){
+  for (const id of MANUAL) {
+    if (results[id]==='na') continue;
+    delete results[id]; delete details[id];
+    document.querySelectorAll(`[data-chip="${id}"]`).forEach(c=>{ c.className='pill'; c.textContent='À faire'; c.closest('details')?.querySelectorAll('.sel').forEach(b=>b.classList.remove('sel')); });
+  }
+  persist(); updateScore();
+}
+function resetAll(){ resetManual(); buildReport(); toast('Tests remis à zéro'); }
+
+
+/* =========================================================
+   OPTIMISATION
+   ========================================================= */
+const STEPS = [
+  ['restart','Redémarrer le téléphone','Vide la mémoire vive et ferme les processus bloqués. À faire une fois par semaine.','Bouton marche › Redémarrer',''],
+  ['update','Mettre Android et les applis à jour','Les mises à jour corrigent souvent des lenteurs et des fuites de batterie.','Réglages › Mise à jour logicielle, puis Play Store › Gérer les applis','android.settings.SYSTEM_UPDATE_SETTINGS'],
+  ['apps','Désinstaller les applis inutilisées','Chaque appli installée prend de la place et peut tourner en arrière-plan.','Play Store › Profil › Gérer les applis › Gérer, trier par « Moins utilisées »',''],
+  ['cache','Vider le cache des grosses applis','Réseaux sociaux, navigateurs et messageries accumulent souvent plusieurs Go.','Réglages › Applications › [appli] › Stockage › Vider le cache','android.settings.INTERNAL_STORAGE_SETTINGS'],
+  ['photos','Supprimer doublons et vieilles vidéos','Utilise l\'analyse plus haut, puis supprime dans ta galerie. Pense à vider la corbeille.','Galerie › Corbeille › Vider',''],
+  ['whatsapp','Nettoyer les médias de messagerie','Les photos et vidéos reçues dans les groupes s\'accumulent sans qu\'on le voie.','WhatsApp › Paramètres › Stockage et données › Gérer le stockage',''],
+  ['downloads','Faire le tri dans Téléchargements','Les PDF, APK et vidéos téléchargés y restent indéfiniment.','Fichiers › Téléchargements, trier par taille','android.intent.action.VIEW_DOWNLOADS'],
+  ['background','Limiter les applis en arrière-plan','Les applis qui tournent en permanence ralentissent et vident la batterie.','Réglages › Batterie › Utilisation par appli › Restreindre','android.intent.action.POWER_USAGE_SUMMARY'],
+  ['anim','Réduire les animations','Rend le téléphone plus vif. Active d\'abord les options pour développeurs en touchant 7 fois « Numéro de build ».','Options pour développeurs › Échelles d\'animation › 0,5x','android.settings.APPLICATION_DEVELOPMENT_SETTINGS'],
+  ['widgets','Retirer les widgets et le fond animé','Ils se mettent à jour en continu et sollicitent le processeur.','Écran d\'accueil › Appui long',''],
+];
+const stepsDone = store.get('steps', {});
+function renderSteps(){
+  $('steps').innerHTML = STEPS.map(([id,t,d,p,a]) => `<li><label><input type="checkbox" data-step="${id}" ${stepsDone[id]?'checked':''}><div><b>${t}</b><small>${d}</small><span class="path">${p}</span>${NATIVE && a ? `<button class="open-btn" onclick="event.preventDefault();nat('openSettings','${a}')">Ouvrir</button>` : ''}${NATIVE && id==='apps' ? `<button class="open-btn" onclick="event.preventDefault();document.getElementById('appsSec').scrollIntoView({behavior:'smooth'})">Voir mes applis</button>` : ''}</div></label></li>`).join('');
+  updateSteps();
+}
+function updateSteps(){
+  const n = STEPS.filter(([id]) => stepsDone[id]).length;
+  $('stepsCount').textContent = n ? `${n} étape${n>1?'s':''} faite${n>1?'s':''} sur ${STEPS.length}.` : 'Coche chaque étape une fois faite.';
+  $('optSummary').textContent = n ? `${n}/${STEPS.length} étapes faites` : 'Doublons, gros fichiers, mémoire';
+}
+document.addEventListener('change', e => {
+  const st = e.target.dataset?.step;
+  if (st) { stepsDone[st] = e.target.checked; store.set('steps', stepsDone); updateSteps(); if (e.target.checked) feedback('ok'); }
+});
+
+async function initOptMem(){
+  const nm = nat('memory'), ns = nat('storage');
+  const o = nm && nm.total ? { 'RAM du téléphone': fmtBytes(nm.total), 'RAM disponible': fmtBytes(nm.available) }
+    : { 'RAM du téléphone': navigator.deviceMemory ? 'au moins ' + navigator.deviceMemory + ' Go' : 'Non communiquée' };
+  if (ns && ns.total) o['Stockage'] = `${fmtBytes(ns.total - ns.free)} sur ${fmtBytes(ns.total)}`;
+  if (performance.memory) o['Mémoire de cette page'] = fmtBytes(performance.memory.usedJSHeapSize);
+  if (navigator.storage?.estimate) { try { const e = await navigator.storage.estimate(); o['Données de l\'appli'] = fmtBytes(e.usage); } catch(e){} }
+  if (navigator.deviceMemory && navigator.deviceMemory <= 3) o['Conseil'] = 'Peu de RAM : limite les applis ouvertes';
+  rows('optMem', o);
+  delete info['Mémoire de cette page']; delete info['Données de l\'appli']; delete info['Conseil']; delete info['RAM du téléphone']; delete info['RAM disponible'];
+  const r = $('storPct'), saved = store.get('storPct', null);
+  if (saved != null) r.value = saved;
+  const upd = () => {
+    const v = +r.value; $('storLbl').textContent = v + ' %';
+    r.style.accentColor = v>=90?'var(--ko)':v>=80?'var(--na)':'var(--ok)';
+    $('storAdvice').textContent = v>=90 ? 'Stockage presque plein : c\'est la cause n°1 des lenteurs. Libère au moins 10 %.'
+      : v>=80 ? 'Stockage chargé : Android ralentit au-delà de 85 %. Fais un peu de tri.' : 'Stockage correct, ce n\'est pas lui qui ralentit le téléphone.';
+    $('storAdvice').style.color = v>=90?'var(--ko)':v>=80?'var(--na)':'var(--ok)';
+  };
+  r.oninput = () => { upd(); store.set('storPct', +r.value); info['Stockage occupé (déclaré)'] = r.value + ' %'; };
+  if (ns && ns.total) { r.value = Math.round((ns.total - ns.free) / ns.total * 100); info['Stockage'] = `${fmtBytes(ns.total - ns.free)} utilisés sur ${fmtBytes(ns.total)}`; delete info['Stockage occupé (déclaré)']; }
+  upd();
+}
+
+/* --- doublons --- */
+async function fileHash(f){
+  // fichiers > 8 Mo : empreinte sur le début, le milieu et la fin
+  let buf;
+  if (f.size <= 8e6) buf = await f.arrayBuffer();
+  else { const c = 1e6, parts = [f.slice(0,c), f.slice(f.size/2, f.size/2+c), f.slice(f.size-c)];
+    buf = await new Blob([...parts, String(f.size)]).arrayBuffer(); }
+  const h = await crypto.subtle.digest('SHA-256', buf);
+  return [...new Uint8Array(h)].slice(0,12).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function dHash(f){
+  try {
+    const bmp = await createImageBitmap(f, {resizeWidth:9, resizeHeight:8, resizeQuality:'medium'});
+    const c = document.createElement('canvas'); c.width=9; c.height=8; const x = c.getContext('2d'); x.drawImage(bmp,0,0,9,8); bmp.close?.();
+    const d = x.getImageData(0,0,9,8).data, g = []; for (let i=0;i<d.length;i+=4) g.push(d[i]*.3+d[i+1]*.59+d[i+2]*.11);
+    let bits = []; for (let y=0;y<8;y++) for (let k=0;k<8;k++) bits.push(g[y*9+k] > g[y*9+k+1] ? 1 : 0);
+    return bits;
+  } catch(e){ return null; }
+}
+const ham = (a,b) => { let n=0; for (let i=0;i<64;i++) if (a[i]!==b[i]) n++; return n; };
+let thumbURLs = [];
+$('dupInput').addEventListener('change', async e => {
+  const files = [...e.target.files]; if (!files.length) return;
+  thumbURLs.forEach(u=>URL.revokeObjectURL(u)); thumbURLs = [];
+  const prog = $('dupProgress'); prog.style.display='block'; $('dupResult').innerHTML = '';
+  // 1. doublons exacts : même taille puis même empreinte
+  const bySize = {}; files.forEach(f => (bySize[f.size] ||= []).push(f));
+  const cands = Object.values(bySize).filter(g => g.length>1).flat();
+  const byHash = {}; let k = 0;
+  for (const f of cands) { prog.textContent = `Comparaison des fichiers… ${++k}/${cands.length}`; (byHash[await fileHash(f)] ||= []).push(f); }
+  const exact = Object.values(byHash).filter(g => g.length>1);
+  const inExact = new Set(exact.flat());
+  // 2. photos similaires (rafales, captures recadrées…)
+  const imgs = files.filter(f => f.type.startsWith('image/') && (!inExact.has(f) || exact.some(g => g[0]===f))).slice(0, 1500);
+  const hashes = []; k = 0;
+  for (const f of imgs) { if (++k % 10 === 0) prog.textContent = `Analyse des photos… ${k}/${imgs.length}`; const h = await dHash(f); if (h && h.reduce((a,b)=>a+b,0) >= 3) hashes.push([f,h]); }
+  const used = new Set(), similar = [];
+  for (let i=0;i<hashes.length;i++) { if (used.has(i)) continue; const g=[hashes[i][0]];
+    for (let j=i+1;j<hashes.length;j++) if (!used.has(j) && ham(hashes[i][1], hashes[j][1]) <= 5) { g.push(hashes[j][0]); used.add(j); }
+    if (g.length>1) { used.add(i); similar.push(g); } }
+  prog.style.display='none';
+  renderDup(files, exact, similar);
+});
+function thumb(f, keep){
+  let im;
+  if (f.type.startsWith('image/')) { const u = URL.createObjectURL(f); thumbURLs.push(u); im = `<div class="im" style="background-image:url('${u}')">${keep?'<i>Garder</i>':''}</div>`; }
+  else im = `<div class="im">${keep?'<i>Garder</i>':''}${(f.name.split('.').pop()||'').toUpperCase()}</div>`;
+  return `<div class="thumb">${im}<span>${f.name}</span><span>${fmtBytes(f.size)}</span></div>`;
+}
+function renderDup(files, exact, similar){
+  const sortKeep = g => [...g].sort((a,b) => b.size - a.size || a.lastModified - b.lastModified);
+  const wasteExact = exact.reduce((s,g) => s + g.slice(1).reduce((a,f)=>a+f.size,0), 0);
+  const wasteSim = similar.reduce((s,g) => s + sortKeep(g).slice(1).reduce((a,f)=>a+f.size,0), 0);
+  const total = files.reduce((a,f)=>a+f.size,0);
+  let h = `<div class="found"><div><b>${exact.reduce((s,g)=>s+g.length-1,0)}</b><small>doublons exacts</small></div>
+    <div><b>${similar.reduce((s,g)=>s+g.length-1,0)}</b><small>photos similaires</small></div>
+    <div><b>${fmtBytes(wasteExact + wasteSim)}</b><small>à libérer</small></div></div>`;
+  if (!exact.length && !similar.length) h += `<p class="res" style="color:var(--ok);margin:0 0 8px">Aucun doublon parmi ces ${files.length} fichiers (${fmtBytes(total)}).</p>`;
+  else h += `<p style="color:var(--mut);font-size:14px;margin:0 0 4px">Pour chaque groupe, garde la version marquée et supprime les autres depuis ta galerie ou l'appli Fichiers.</p>`;
+  exact.forEach(g => { h += `<div class="grp"><div class="grp-h"><span><b>Identiques</b>, ${g.length} copies</span><span>${fmtBytes(g[0].size*(g.length-1))} à libérer</span></div><div class="thumbs">${g.map((f,i)=>thumb(f,i===0)).join('')}</div></div>`; });
+  similar.forEach(g => { const s = sortKeep(g); h += `<div class="grp"><div class="grp-h"><span><b>Similaires</b>, ${g.length} photos</span><span>${fmtBytes(s.slice(1).reduce((a,f)=>a+f.size,0))}</span></div><div class="thumbs">${s.map((f,i)=>thumb(f,i===0)).join('')}</div></div>`; });
+  const big = [...files].sort((a,b)=>b.size-a.size).slice(0,8).filter(f => f.size > 20e6);
+  if (big.length) h += `<div class="grp"><div class="grp-h"><span><b>Plus gros fichiers</b></span></div><ul class="big-list">${big.map(f=>`<li><span>${f.name}</span><b>${fmtBytes(f.size)}</b></li>`).join('')}</ul></div>`;
+  $('dupResult').innerHTML = h;
+  if (exact.length || similar.length) feedback('ok');
+}
+
+
+/* =========================================================
+   FONCTIONS PROPRES À L'APPLI ANDROID
+   ========================================================= */
+let batVerdict = {st:'ok', detail:null};
+const HEALTH = {1:'Inconnue', 2:'Bonne', 3:'Surchauffe', 4:'Batterie morte', 5:'Surtension', 6:'Défaillance', 7:'Trop froide'};
+function nativeBattery(){
+  const L = []; const b = {level:0, charging:false, chargingTime:Infinity, dischargingTime:Infinity, raw:{}, addEventListener(ev, fn){ L.push(fn); }};
+  const poll = () => {
+    const r = nat('battery'); if (!r || r.level == null) return;
+    const changed = r.level !== b.level || r.charging !== b.charging;
+    b.level = r.level; b.charging = r.charging; b.raw = r;
+    renderBatDetail(r);
+    if (changed) L.forEach(f => f());
+  };
+  poll(); setInterval(poll, 5000);
+  return b;
+}
+function renderBatDetail(r){
+  const o = {};
+  o['État'] = HEALTH[r.health] || 'Inconnue';
+  if (r.temperature) o['Température'] = fr(r.temperature) + ' °C';
+  if (r.voltage) o['Tension'] = fr(r.voltage, 2) + ' V';
+  if (r.technology) o['Technologie'] = r.technology;
+  if (r.cycles > 0) o['Cycles de charge'] = r.cycles;
+  let cap = null;
+  if (r.designCapacity > 500) {
+    o['Capacité d\'origine'] = Math.round(r.designCapacity) + ' mAh';
+    if (r.chargeCounter > 0 && r.level >= .15) {
+      const full = r.chargeCounter / 1000 / r.level, pct = full / r.designCapacity * 100;
+      if (pct > 30 && pct < 130) { cap = Math.min(100, Math.round(pct)); o['Capacité restante'] = `${cap} % (${Math.round(full)} mAh)`; }
+    }
+  }
+  if (r.currentNow && Math.abs(r.currentNow) > 1000) o[r.charging ? 'Courant de charge' : 'Consommation actuelle'] = Math.round(Math.abs(r.currentNow) / 1000) + ' mA';
+  $('batDetail').innerHTML = Object.entries(o).map(([k,v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+  ['État','Température','Cycles de charge','Capacité restante'].forEach(k => { if (o[k] != null) info['Batterie : ' + k.toLowerCase()] = o[k]; });
+  const bad = [3,4,5,6].includes(r.health) || r.temperature > 45 || (cap != null && cap < 75);
+  const detail = cap != null ? `capacité ${cap} %` : (HEALTH[r.health] || null);
+  const prev = batVerdict.st;
+  batVerdict = {st: bad ? 'ko' : 'ok', detail};
+  if (results.battery && prev !== batVerdict.st) mark('battery', batVerdict.st, {detail});
+}
+
+let luxMin = Infinity, luxMax = 0; const prox = {near:false, far:false};
+window.onNativeSensor = (kind, v, max) => {
+  if (kind === 'light') {
+    $('lux').textContent = Math.round(v) + ' lux'; luxMin = Math.min(luxMin, v); luxMax = Math.max(luxMax, v);
+    if (luxMax - luxMin > 15 && luxMax > luxMin * 1.5 && results.light !== 'ok') mark('light','ok');
+  } else {
+    const near = v < max;
+    $('proxVal').textContent = near ? 'Main détectée' : 'Rien devant';
+    $('proxVal').style.color = near ? 'var(--ok)' : '';
+    if (near) prox.near = true; else prox.far = true;
+    if (prox.near && prox.far && results.proximity !== 'ok') mark('proximity','ok');
+  }
+};
+function testEarpiece(){ nat('earpiece'); toast('Colle l\'oreille en haut de l\'écran : une tonalité joue 2 secondes'); }
+
+window.nativeBack = () => {
+  if ($('sheet').classList.contains('on')) { $('sheet').classList.remove('on'); return true; }
+  if (ov.classList.contains('on')) { closeOverlay(); return true; }
+  if ($('welcome').classList.contains('on')) return false;
+  if (!$('v-home').classList.contains('on')) { if (guide.on) stopGuide(); go('v-home'); return true; }
+  return false;
+};
+window.onNativeResume = () => {
+  if (sensorsOn) { nat('startSensor','proximity'); nat('startSensor','light'); }
+  if (appsLoaded) loadApps(true);
+  if (NATIVE) initOptMem();
+};
+
+/* --- applications --- */
+let appsLoaded = false, appsData = [], appsSort = 'size';
+const daysAgo = t => Math.floor((Date.now() - t) / 864e5);
+function loadApps(silent){
+  const access = nat('usageAccess');
+  $('appsAccess').innerHTML = access ? '' : `<div class="verdict wait" style="margin:0 0 10px">Pour voir la taille du cache et les applis que tu n'ouvres plus, autorise « Accès aux données d'utilisation » pour Phone Medic.
+    <div class="row" style="margin-top:10px"><button class="btn go" onclick="nat('openSettings','android.settings.USAGE_ACCESS_SETTINGS')">Autoriser l'accès</button></div></div>`;
+  if (!silent) { $('appsBtn').disabled = true; $('appsBtn').textContent = 'Analyse en cours…'; }
+  nat('apps');
+}
+window.onNativeApps = list => {
+  appsLoaded = true; appsData = list || [];
+  $('appsBtn').disabled = false; $('appsBtn').textContent = 'Actualiser';
+  renderApps();
+};
+function setAppsSort(s){ appsSort = s; renderApps(); }
+function renderApps(){
+  const size = a => a.app != null ? a.app + (a.data||0) : a.apk;
+  const unused = a => a.lastUsed === -1 ? 999 : a.lastUsed > 0 ? daysAgo(a.lastUsed) : null;
+  const access = appsData.some(a => a.cache != null) || appsData.some(a => a.lastUsed > 0);
+  const totalCache = appsData.reduce((s,a) => s + (a.cache||0), 0);
+  const idle = access ? appsData.filter(a => (unused(a) ?? 0) >= 30) : [];
+  const sorted = [...appsData].sort((a,b) => appsSort==='cache' ? (b.cache||0)-(a.cache||0) : appsSort==='unused' ? (unused(b)??-1)-(unused(a)??-1) : size(b)-size(a));
+  let h = `<div class="found"><div><b>${appsData.length}</b><small>applis installées</small></div>
+    <div><b>${access ? fmtBytes(totalCache) : '—'}</b><small>de cache</small></div>
+    <div><b>${access ? idle.length : '—'}</b><small>pas ouvertes depuis 30 j</small></div></div>
+    <div class="seg-ctl"><button class="${appsSort==='size'?'on':''}" onclick="setAppsSort('size')">Plus lourdes</button>
+    <button class="${appsSort==='cache'?'on':''}" onclick="setAppsSort('cache')" ${access?'':'disabled'}>Cache</button>
+    <button class="${appsSort==='unused'?'on':''}" onclick="setAppsSort('unused')" ${access?'':'disabled'}>Inutilisées</button></div>`;
+  h += sorted.slice(0, 40).map(a => {
+    const u = unused(a), sub = [];
+    if (a.cache != null) sub.push(`cache ${fmtBytes(a.cache)}`);
+    if (u === 999) sub.push('<span class="warn">pas ouverte depuis 6 mois</span>');
+    else if (u != null) sub.push(u >= 30 ? `<span class="warn">ouverte il y a ${u} jours</span>` : u === 0 ? 'ouverte aujourd\'hui' : `ouverte il y a ${u} j`);
+    const safe = a.pkg.replace(/[^\w.]/g,'');
+    return `<div class="app-row"><div class="app-top"><b>${a.name.replace(/</g,'&lt;')}</b><span>${fmtBytes(size(a))}</span></div>
+      <div class="app-sub">${sub.join(', ') || 'taille de l\'appli seule'}</div>
+      <div class="row"><button class="btn" onclick="nat('openAppInfo','${safe}')">Vider le cache</button><button class="btn" style="color:var(--ko)" onclick="nat('uninstall','${safe}')">Désinstaller</button></div></div>`;
+  }).join('');
+  if (sorted.length > 40) h += `<p class="note">Les 40 premières applis sont affichées.</p>`;
+  $('appsResult').innerHTML = h;
+}
+
+/* =========================================================
+   DÉMARRAGE
+   ========================================================= */
+function closeWelcome(startNow){
+  $('welcome').classList.remove('on'); store.set('welcomed', true);
+  audio();
+  if (startNow) startGuide();
+}
+(function boot(){
+  const s = store.get('session', null);
+  if (s && Date.now() - s.at < 7*24*3600e3) {
+    restoring = true;
+    details = s.details || {};
+    for (const [id, st] of Object.entries(s.results || {})) if (MANUAL.includes(id)) mark(id, st);
+    restoring = false;
+  }
+  if (!settings.feedback) $('fbBtn').classList.add('off');
+  if (!store.get('welcomed', false)) $('welcome').classList.add('on');
+  if (NATIVE) {
+    $('proxTxt').textContent = 'Active les capteurs, puis passe la main devant le haut de l\'écran, près de l\'écouteur, et retire-la.';
+    $('keysTxt').textContent = 'Appuie sur Volume +, puis sur Volume −. Le test se valide quand les deux répondent.';
+  } else {
+    mark('proximity','na');
+    if (!seenKeys.size) mark('buttons','na');
+  }
+  initSystem();
+  renderSteps(); initOptMem();
+  updateScore();
+  setTimeout(() => ready = true, 1500);
+})();
+</script>
+</body>
+</html>
