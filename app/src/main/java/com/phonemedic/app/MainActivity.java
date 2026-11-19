@@ -68,6 +68,10 @@ import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Base64;
 import android.view.KeyEvent;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
+import android.widget.FrameLayout;
+import android.window.OnBackInvokedDispatcher;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -100,6 +104,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     private static final int REQ_MEDIA = 10, REQ_GEO = 11, REQ_FILE = 12, REQ_STORAGE = 13, REQ_NOTIF = 14;
 
     private WebView web;
+    private FrameLayout root;
     private PermissionRequest pendingWebPerm;
     private GeolocationPermissions.Callback geoCallback;
     private String geoOrigin;
@@ -116,9 +121,28 @@ public class MainActivity extends Activity implements SensorEventListener {
         super.onCreate(savedInstanceState);
         applySystemBarColors();
 
-        WebView.setWebContentsDebuggingEnabled(true);
+        WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);
         web = new WebView(this);
-        setContentView(web);
+        // Android 15+ affiche les applis bord à bord : on laisse la place des barres système
+        root = new FrameLayout(this);
+        root.addView(web, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        root.setOnApplyWindowInsetsListener((v, insets) -> {
+            int l, t, r, b;
+            if (Build.VERSION.SDK_INT >= 30) {
+                android.graphics.Insets in = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout() | WindowInsets.Type.ime());
+                l = in.left; t = in.top; r = in.right; b = in.bottom;
+            } else {
+                l = insets.getSystemWindowInsetLeft(); t = insets.getSystemWindowInsetTop();
+                r = insets.getSystemWindowInsetRight(); b = insets.getSystemWindowInsetBottom();
+            }
+            v.setPadding(l, t, r, b);
+            return insets;
+        });
+        setContentView(root);
+        applySystemBarColors();
+        if (Build.VERSION.SDK_INT >= 33) {
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::handleBack);
+        }
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
         WebSettings s = web.getSettings();
@@ -284,8 +308,13 @@ public class MainActivity extends Activity implements SensorEventListener {
     @Override
     @SuppressWarnings("deprecation")
     public void onBackPressed() {
+        handleBack();
+    }
+
+    /** Le bouton retour remonte d'abord dans les écrans de l'appli, puis la ferme. */
+    private void handleBack() {
         web.evaluateJavascript("(window.nativeBack ? window.nativeBack() : false)", value -> {
-            if (!"true".equals(value)) MainActivity.super.onBackPressed();
+            if (!"true".equals(value)) finish();
         });
     }
 
@@ -400,6 +429,11 @@ public class MainActivity extends Activity implements SensorEventListener {
         w.setStatusBarColor(bg);
         w.setNavigationBarColor(bg);
         w.getDecorView().setBackgroundColor(bg);
+        if (root != null) root.setBackgroundColor(bg);
+        if (Build.VERSION.SDK_INT >= 30 && w.getInsetsController() != null) {
+            int light = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS | WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
+            w.getInsetsController().setSystemBarsAppearance(isDark() ? 0 : light, light);
+        }
         View d = w.getDecorView();
         int flags = d.getSystemUiVisibility();
         if (isDark()) flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
@@ -1181,6 +1215,21 @@ public class MainActivity extends Activity implements SensorEventListener {
             } catch (Exception e) {
                 return false;
             }
+        }
+
+
+        // Fonctions présentes selon la version (complète sur GitHub, ou Google Play)
+        @JavascriptInterface
+        public String features() {
+            boolean full = !BuildConfig.STORE_PLAY;
+            JSONObject o = new JSONObject();
+            try {
+                o.put("store", full ? "github" : "play");
+                o.put("selfUpdate", full);
+                o.put("autoClean", full);
+                o.put("allFiles", full);
+            } catch (Exception ignored) {}
+            return o.toString();
         }
 
         @JavascriptInterface

@@ -11,6 +11,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      HAS_UPLOAD_KEY: ${{ secrets.UPLOAD_KEYSTORE_B64 != '' }}
     steps:
       - uses: actions/checkout@v5
 
@@ -27,24 +29,51 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.9'
+          gradle-version: '8.13'
 
-      - name: Compiler
-        run: gradle assembleDebug --no-daemon --stacktrace -PbuildNumber=${{ github.run_number }}
+      # Polices embarquées dans l'appli (licence SIL Open Font License)
+      - name: Télécharger les polices
+        run: |
+          d=app/src/main/assets/www/fonts
+          mkdir -p "$d"
+          curl -fsSL -o "$d/Figtree.ttf" "https://raw.githubusercontent.com/google/fonts/main/ofl/figtree/Figtree%5Bwght%5D.ttf"
+          curl -fsSL -o "$d/BricolageGrotesque.ttf" "https://raw.githubusercontent.com/google/fonts/main/ofl/bricolagegrotesque/BricolageGrotesque%5Bopsz,wdth,wght%5D.ttf"
+          curl -fsSL -o "$d/OFL.txt" "https://raw.githubusercontent.com/google/fonts/main/ofl/figtree/OFL.txt"
+          ls -la "$d"
+
+      - name: Compiler l'APK (version GitHub)
+        run: gradle assembleFullDebug --no-daemon --stacktrace -PbuildNumber=${{ github.run_number }}
+
+      - name: Compiler le fichier Google Play (.aab)
+        if: env.HAS_UPLOAD_KEY == 'true'
+        env:
+          UPLOAD_KEYSTORE_PASSWORD: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
+        run: |
+          echo "${{ secrets.UPLOAD_KEYSTORE_B64 }}" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          export UPLOAD_KEYSTORE_PATH="$RUNNER_TEMP/upload.jks"
+          gradle bundlePlayRelease --no-daemon --stacktrace -PbuildNumber=${{ github.run_number }}
+          cp app/build/outputs/bundle/playRelease/app-play-release.aab PhoneMedic-GooglePlay.aab
+          rm -f "$RUNNER_TEMP/upload.jks"
 
       - name: Renommer l'APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk PhoneMedic.apk
+        run: cp app/build/outputs/apk/full/debug/app-full-debug.apk PhoneMedic.apk
 
       - uses: actions/upload-artifact@v4
         with:
-          name: PhoneMedic-apk
-          path: PhoneMedic.apk
+          name: PhoneMedic
+          path: |
+            PhoneMedic.apk
+            PhoneMedic-GooglePlay.aab
+          if-no-files-found: ignore
 
       - name: Publier la version
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.3.${{ github.run_number }}
-          name: Phone Medic 1.3.${{ github.run_number }}
+          tag_name: v1.4.${{ github.run_number }}
+          name: Phone Medic 1.4.${{ github.run_number }}
           body: ${{ github.event.head_commit.message }}
-          files: PhoneMedic.apk
+          files: |
+            PhoneMedic.apk
+            PhoneMedic-GooglePlay.aab
+          fail_on_unmatched_files: false
           make_latest: true

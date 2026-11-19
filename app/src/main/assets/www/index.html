@@ -5,10 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#E9EDF2">
 <title>Phone Medic</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+  // Dans l'appli, les polices sont embarquées (aucune connexion) ; dans un navigateur, on les charge depuis Google Fonts
+  if (!window.Android) document.write('<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">');
+</script>
 <style>
+  @font-face{font-family:"Figtree";src:url(fonts/Figtree.ttf) format("truetype");font-weight:300 900;font-display:swap}
+  @font-face{font-family:"Bricolage Grotesque";src:url(fonts/BricolageGrotesque.ttf) format("truetype");font-weight:200 800;font-display:swap}
   :root{
     --bg:#E9EDF2; --surface:#FFFFFF; --sunk:#F3F5F8; --line:#D6DCE4;
     --ink:#14213D; --mut:#5E6B82; --faint:#A9B3C2;
@@ -444,7 +447,7 @@
     <div class="perm"><span class="cat-ic"><svg class="i"><use href="#i-cam"/></svg></span><div><b>Caméra et micro</b><span>Pour vérifier l'image, le flash et l'enregistrement de ta voix.</span></div></div>
     <div class="perm"><span class="cat-ic"><svg class="i"><use href="#i-pin"/></svg></span><div><b>Position</b><span>Pour mesurer la précision du GPS.</span></div></div>
     <div class="perm"><span class="cat-ic"><svg class="i"><use href="#i-sensor"/></svg></span><div><b>Capteurs de mouvement</b><span>Pour l'accéléromètre, le gyroscope et la boussole.</span></div></div>
-    <div class="perm"><span class="cat-ic"><svg class="i"><use href="#i-lock"/></svg></span><div><b>Tes données restent ici</b><span>Les résultats sont gardés sur ce téléphone. Seul le test de débit contacte un serveur Cloudflare.</span></div></div>
+    <div class="perm"><span class="cat-ic"><svg class="i"><use href="#i-lock"/></svg></span><div><b>Tes données restent ici</b><span id="privTxt">Les résultats sont gardés sur ce téléphone. Seul le test de débit contacte un serveur Cloudflare.</span></div></div>
     <button class="start-btn" onclick="closeWelcome(false); optimizeNow()"><svg class="i"><use href="#i-broom"/></svg>Optimiser mon téléphone</button>
     <button class="ghost" onclick="closeWelcome(true)">Faire le test complet du téléphone</button>
   </div>
@@ -813,6 +816,7 @@
       <div class="set-row"><span class="t"><b>Code source</b><small>github.com/simonpst02-beep/phone-medic</small></span><a class="a" href="https://github.com/simonpst02-beep/phone-medic" style="text-decoration:none"><button class="a">Ouvrir</button></a></div>
       <div class="set-row"><span class="t"><b>Signaler un problème</b><small>Crée un ticket sur GitHub</small></span><a href="https://github.com/simonpst02-beep/phone-medic/issues/new" style="text-decoration:none"><button class="a">Signaler</button></a></div>
     </div>
+    <div class="set-group"><div class="set-row"><span class="t"><b>Politique de confidentialité</b></span><a href="https://simonpst02-beep.github.io/phone-medic/privacy.html" style="text-decoration:none"><button class="a">Lire</button></a></div></div>
     <p class="note" style="text-align:center">Tes résultats restent sur ce téléphone.</p>
   </div>
 </section>
@@ -896,6 +900,7 @@ const $ = id => document.getElementById(id);
 const NATIVE = window.Android || null;
 const nat = (fn, ...a) => { if (!NATIVE || typeof NATIVE[fn] !== 'function') return null;
   try { const r = NATIVE[fn](...a); return (typeof r === 'string' && /^[\[{]/.test(r)) ? JSON.parse(r) : r; } catch(e){ return null; } };
+const FEATURES = Object.assign({selfUpdate:false, autoClean:false, allFiles:false, store:'web'}, (window.Android && window.Android.features) ? JSON.parse(window.Android.features()) : (window.Android ? {selfUpdate:true, autoClean:true, allFiles:true, store:'github'} : {}));
 if (NATIVE) {
   document.body.classList.add('native');
   try { Object.defineProperty(navigator, 'vibrate', {value: p => !!nat('vibrate', JSON.stringify(p)), configurable:true}); } catch(e){}
@@ -1809,6 +1814,7 @@ function loadApps(silent){
 /* --- automatisation : vider le cache et désinstaller sans toucher l'écran --- */
 let autoPending = null;
 function autoCard(access, size){
+  if (!FEATURES.autoClean) return '';
   const big = appsData.filter(a => (a.cache||0) >= 1e7);
   const bigTotal = big.reduce((s,a) => s + a.cache, 0);
   if (!nat('autoAvailable')) {
@@ -1955,6 +1961,7 @@ const CLEAN_CATS = {
 let scan = null, scanBusy = false, cleanSel = {}, cleanExclude = new Set(), openCats = new Set();
 function renderCleanAccess(){
   if (!NATIVE) return;
+  if (!FEATURES.allFiles) { $('cleanSec').style.display = 'none'; $('dupSec').style.display = ''; return; }
   const ok = nat('hasAllFiles');
   $('dupSec').style.display = ok ? 'none' : '';
   if (!ok) {
@@ -2067,7 +2074,7 @@ function analyzeAll(){
 }
 function analyzeStep(){
   analyzeStage++;
-  if (analyzeStage === 1) { if (nat('hasAllFiles')) { startScan(); return; } analyzeStage++; }
+  if (analyzeStage === 1) { if (FEATURES.allFiles && nat('hasAllFiles')) { startScan(); return; } analyzeStage++; }
   if (analyzeStage === 2) { loadApps(true); loadScreenTime(); setTimeout(analyzeStep, 1500); return; }
   analyzeAllPending = false;
   $('bilanBtn').disabled = false; $('bilanBtn').textContent = 'Relancer l\'analyse';
@@ -2103,7 +2110,7 @@ function renderBilan(){
   score = Math.max(0, score);
   const lbl = score >= 90 ? 'Téléphone en pleine forme' : score >= 70 ? 'Quelques optimisations possibles' : score >= 50 ? 'Optimisation conseillée' : 'Optimisation nécessaire';
   const col = score >= 85 ? 'var(--ok)' : score >= 60 ? 'var(--na)' : 'var(--ko)';
-  const partial = !scan || !appsLoaded;
+  const partial = (FEATURES.allFiles && !scan) || !appsLoaded;
   recos.sort((a,b) => b.pts - a.pts);
   $('bilanBody').innerHTML = `<div class="big-score"><div class="num" style="color:${col}">${score}<small>/100</small></div><div class="lbl">${lbl}${partial ? '<br><small style="font:500 13px var(--body);color:var(--mut)">Bilan partiel : lance l\'analyse complète</small>' : ''}</div></div>
     ${recos.length ? `<ul class="recos">${recos.map(r => `<li><i style="background:${r.color}"></i><span>${r.text}</span>${r.btn ? `<button onclick="${r.btn[1]}">${r.btn[0]}</button>` : ''}</li>`).join('')}</ul>` : '<p class="res" style="color:var(--ok);margin:0 0 12px">Rien à signaler.</p>'}`;
@@ -2268,7 +2275,7 @@ function setFeedback(on){ settings.feedback = on; store.set('settings', settings
 segBind('themeCtl','theme'); segBind('zoomCtl','zoom'); segBind('drainCtl','drain');
 
 function renderSettings(){
-  const ver = NATIVE ? `Version ${nat('version')}` : 'Version web';
+  const ver = NATIVE ? `Version ${nat('version')}${FEATURES.store === 'play' ? '' : ' (GitHub)'}` : 'Version web';
   $('setVersion').textContent = ver; $('aboutVer').textContent = ver + (NATIVE ? `, build ${nat('buildNumber')}` : '');
   const h = store.get('history', []);
   $('histCount').textContent = h.length ? `${h.length} diagnostic${h.length>1?'s':''} enregistré${h.length>1?'s':''}` : 'Vide';
@@ -2279,6 +2286,9 @@ function renderSettings(){
       ['Données d\'utilisation', 'Pour le cache, les applis inutilisées et le temps d\'écran', nat('usageAccess'), "nat('openSettings','android.settings.USAGE_ACCESS_SETTINGS')"],
       ['Installer des applis', 'Pour installer les mises à jour de Phone Medic', nat('canInstall'), "nat('openInstallPermission')"],
     ];
+    if (!FEATURES.allFiles) perms.splice(perms.findIndex(p => p[0].startsWith('Accès à tous')), 1);
+    if (!FEATURES.selfUpdate) perms.splice(perms.findIndex(p => p[0].startsWith('Installer')), 1);
+    $('updGroup').style.display = FEATURES.selfUpdate ? '' : 'none';
     $('permRows').innerHTML = perms.map(([t,d,ok,act]) => `<div class="set-row"><span class="t"><b>${t}</b><small>${d}</small></span>${ok ? '<span class="st" style="color:var(--ok)">Autorisé</span>' : `<button class="a" onclick="${act}">Autoriser</button>`}</div>`).join('');
     renderUpdate();
   }
@@ -2300,7 +2310,7 @@ function askReset(kind){
 const upd = {state:'idle', latest:null, asset:null, error:null, pct:0};
 const myBuild = () => (nat('buildNumber') || 0) - 100;
 async function checkUpdate(silent){
-  if (!NATIVE) return;
+  if (!NATIVE || !FEATURES.selfUpdate) return;
   upd.state = 'checking'; upd.error = null; if (!silent) renderUpdate();
   try {
     const r = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`, {cache:'no-store'});
@@ -2357,7 +2367,7 @@ window.onNativeUpdate = (status, msg) => {
 function optimizeNow(){
   if (!NATIVE) { go('v-opt'); return; }
   go('v-opt');
-  setTimeout(() => { if (!nat('hasAllFiles')) { document.getElementById('cleanSec').scrollIntoView({behavior:'smooth'}); toast('Autorise l\'accès aux fichiers pour le nettoyage automatique'); } analyzeAll(); }, 150);
+  setTimeout(() => { if (FEATURES.allFiles && !nat('hasAllFiles')) { document.getElementById('cleanSec').scrollIntoView({behavior:'smooth'}); toast('Autorise l\'accès aux fichiers pour le nettoyage automatique'); } analyzeAll(); }, 150);
 }
 function renderHome(){
   const b = store.get('bilan', null);
@@ -2411,6 +2421,7 @@ function closeWelcome(startNow){
   }
   applyOpts();
   if (!store.get('welcomed', false)) $('welcome').classList.add('on');
+  if (FEATURES.selfUpdate) $('privTxt').textContent = 'Les résultats sont gardés sur ce téléphone. Seuls le test de débit (Cloudflare) et la recherche de mises à jour (GitHub) utilisent internet.';
   if (NATIVE) {
     $('proxTxt').textContent = 'Active les capteurs, puis passe la main devant le haut de l\'écran, près de l\'écouteur, et retire-la.';
     $('keysTxt').textContent = 'Appuie sur Volume +, puis sur Volume −. Le test se valide quand les deux répondent.';
@@ -2423,7 +2434,7 @@ function closeWelcome(startNow){
   }
   initSystem();
   renderSteps(); initOptMem();
-  if (NATIVE && opts.autoUpdate && Date.now() - store.get('lastUpdCheck', 0) > 12*3600e3) setTimeout(() => checkUpdate(true), 2500);
+  if (NATIVE && FEATURES.selfUpdate && opts.autoUpdate && Date.now() - store.get('lastUpdCheck', 0) > 12*3600e3) setTimeout(() => checkUpdate(true), 2500);
   updateScore();
   renderHome();
   setTimeout(() => ready = true, 1500);
