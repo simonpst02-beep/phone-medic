@@ -324,6 +324,23 @@
   .update-card small{opacity:.85}
   .upd-box{background:var(--sunk);border-radius:var(--r-md);padding:14px;margin:4px 0 12px}
   .upd-box .notes{font-size:14px;color:var(--mut);white-space:pre-line;margin:8px 0 12px;max-height:180px;overflow:auto}
+  .hero{background:var(--surface);border-radius:var(--r-lg);padding:18px 16px 12px;margin-top:12px;text-align:center}
+  .hero-ring{position:relative;width:min(56vw,210px);aspect-ratio:1;margin:0 auto}
+  .hero-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+  .hero-ring circle{fill:none;stroke-width:14}
+  .hero-ring .track{stroke:var(--sunk)}
+  .hero-ring .val{stroke:var(--faint);stroke-linecap:round;stroke-dasharray:0 528;transition:stroke-dasharray .8s ease-out,stroke .3s}
+  .hero-ring .gauge-num{font-size:clamp(46px,14vw,62px)}
+  .hero-ring .gauge-txt{font-size:13px;max-width:120px;line-height:1.25;margin-top:4px}
+  .hero-when{color:var(--mut);font-size:14px;margin:8px 0 12px}
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:6px}
+  .tiles div{background:var(--sunk);border-radius:var(--r-sm);padding:10px 4px}
+  .tiles b{display:block;font:800 20px var(--display);font-variant-numeric:tabular-nums}
+  .tiles small{color:var(--mut);font-size:12px;line-height:1.2;display:block}
+  .hero .recos{text-align:left;margin-bottom:12px}
+  .hero .start-btn{margin:4px 0 0}
+  .hero-link{border:0;background:none;color:var(--acc);font-weight:600;font-size:14px;padding:12px 0 4px;width:100%}
+  .tests-entry .ticks{margin-top:8px}
   .native-only{display:none}
   body.native .opt-entry.native-only, body.native .set-row.native-only{display:flex}
   body.native .native-only{display:block}
@@ -401,14 +418,14 @@
 <!-- ================= PREMIER LANCEMENT ================= -->
 <div class="welcome" id="welcome">
   <div class="wrap">
-    <h1>Vérifie ton téléphone en 10 minutes</h1>
-    <p>L'appli teste l'écran, les capteurs, le son, les caméras et la batterie, puis te donne une note sur 100.</p>
+    <h1>Un téléphone plus rapide et en bonne santé</h1>
+    <p>Phone Medic libère de la place, repère ce qui ralentit ton téléphone, puis teste chaque composant : écran, capteurs, son, caméras et batterie.</p>
     <div class="perm"><span class="cat-ic"><svg class="i"><use href="#i-cam"/></svg></span><div><b>Caméra et micro</b><span>Pour vérifier l'image, le flash et l'enregistrement de ta voix.</span></div></div>
     <div class="perm"><span class="cat-ic"><svg class="i"><use href="#i-pin"/></svg></span><div><b>Position</b><span>Pour mesurer la précision du GPS.</span></div></div>
     <div class="perm"><span class="cat-ic"><svg class="i"><use href="#i-sensor"/></svg></span><div><b>Capteurs de mouvement</b><span>Pour l'accéléromètre, le gyroscope et la boussole.</span></div></div>
     <div class="perm"><span class="cat-ic"><svg class="i"><use href="#i-lock"/></svg></span><div><b>Tes données restent ici</b><span>Les résultats sont gardés sur ce téléphone. Seul le test de débit contacte un serveur Cloudflare.</span></div></div>
-    <button class="start-btn" onclick="closeWelcome(true)"><svg class="i"><use href="#i-play"/></svg>Lancer le test complet</button>
-    <button class="ghost" onclick="closeWelcome(false)">Choisir les tests moi-même</button>
+    <button class="start-btn" onclick="closeWelcome(false); optimizeNow()"><svg class="i"><use href="#i-broom"/></svg>Optimiser mon téléphone</button>
+    <button class="ghost" onclick="closeWelcome(true)">Faire le test complet du téléphone</button>
   </div>
 </div>
 
@@ -420,6 +437,38 @@
       <div class="device" id="devName">—</div>
       <button class="icon-btn" id="setBtn" aria-label="Paramètres" data-go="v-settings" style="position:relative"><svg class="i"><use href="#i-gear"/></svg><span class="badge" id="updBadge"></span></button>
     </div>
+
+    <button class="update-card" id="updCard" data-go="v-settings" style="margin-top:12px"><svg class="i"><use href="#i-download"/></svg><span style="flex:1"><b id="updCardTitle">Mise à jour disponible</b><small>Touche pour l'installer</small></span><svg class="i"><use href="#i-chev"/></svg></button>
+
+    <div class="hero">
+      <div class="hero-ring">
+        <svg viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="84" class="track"/><circle cx="100" cy="100" r="84" class="val" id="heroArc"/></svg>
+        <div class="gauge-center">
+          <div class="gauge-num" id="heroNum">—</div>
+          <div class="gauge-txt" id="heroTxt">Optimisation</div>
+        </div>
+      </div>
+      <div class="hero-when" id="heroWhen">Ton téléphone n'a pas encore été analysé</div>
+      <div class="tiles" id="heroTiles"></div>
+      <ul class="recos" id="heroRecos"></ul>
+      <button class="start-btn" id="heroBtn" onclick="optimizeNow()"><svg class="i"><use href="#i-broom"/></svg><span>Optimiser mon téléphone</span></button>
+      <button class="hero-link" data-go="v-opt">Voir le détail de l'optimisation</button>
+    </div>
+
+    <button class="opt-entry tests-entry" data-go="v-tests"><span class="cat-ic"><svg class="i"><use href="#i-sys"/></svg></span>
+      <span style="flex:1;min-width:0"><span class="cat-name">Tests du téléphone</span><small id="testsSummary">Écran, capteurs, son, batterie…</small><span class="ticks" id="homeTicks"></span></span><svg class="i chev" style="color:var(--faint)"><use href="#i-chev"/></svg></button>
+
+    <button class="opt-entry native-only" data-go="v-sec" onclick="loadSecurity()"><span class="cat-ic" style="background:var(--acc-soft);color:var(--acc)"><svg class="i"><use href="#i-shield"/></svg></span>
+      <span style="flex:1"><span class="cat-name">Sécurité</span><small id="secSummary">Verrouillage, mises à jour, applis suspectes</small></span><svg class="i chev" style="color:var(--faint)"><use href="#i-chev"/></svg></button>
+
+    <button class="report-btn" data-go="v-report"><svg class="i"><use href="#i-report"/></svg>Voir le rapport</button>
+  </div>
+</section>
+
+<!-- ================= TESTS ================= -->
+<section class="view" id="v-tests">
+  <div class="wrap">
+    <div class="bar"><button class="back" aria-label="Retour" data-go="v-home"><svg class="i"><use href="#i-back"/></svg></button><div><h1>Tests</h1><div class="sub">Vérifier chaque partie du téléphone</div></div></div>
 
     <div class="gauge">
       <svg viewBox="0 0 200 200" id="gaugeSvg" aria-hidden="true"></svg>
@@ -434,7 +483,6 @@
       <span><i style="background:var(--na)"></i>Non supporté</span>
     </div>
 
-    <button class="update-card" id="updCard" data-go="v-settings"><svg class="i"><use href="#i-download"/></svg><span style="flex:1"><b id="updCardTitle">Mise à jour disponible</b><small>Touche pour l'installer</small></span><svg class="i"><use href="#i-chev"/></svg></button>
     <div class="grade" id="homeGrade"><b id="hgNum">—</b><span id="hgLbl">—</span></div>
     <button class="start-btn" id="startBtn" onclick="startGuide()"><svg class="i"><use href="#i-play"/></svg><span id="startLbl">Lancer le test complet</span></button>
 
@@ -452,21 +500,13 @@
         <span class="cat-body"><span class="cat-name">Matériel</span><span class="ticks" data-ticks="hw"></span></span>
         <span class="cat-count" data-count="hw"></span><svg class="i chev"><use href="#i-chev"/></svg></button>
     </div>
-
-    <button class="opt-entry" data-go="v-opt"><span class="cat-ic"><svg class="i"><use href="#i-broom"/></svg></span>
-      <span style="flex:1"><span class="cat-name">Optimisation</span><small id="optSummary">Doublons, gros fichiers, mémoire</small></span><svg class="i chev" style="color:var(--faint)"><use href="#i-chev"/></svg></button>
-
-    <button class="opt-entry native-only" data-go="v-sec" onclick="loadSecurity()"><span class="cat-ic" style="background:var(--acc-soft);color:var(--acc)"><svg class="i"><use href="#i-shield"/></svg></span>
-      <span style="flex:1"><span class="cat-name">Sécurité</span><small id="secSummary">Verrouillage, mises à jour, applis suspectes</small></span><svg class="i chev" style="color:var(--faint)"><use href="#i-chev"/></svg></button>
-
-    <button class="report-btn" data-go="v-report"><svg class="i"><use href="#i-report"/></svg>Voir le rapport</button>
   </div>
 </section>
 
 <!-- ================= SYSTÈME ================= -->
 <section class="view" id="v-sys">
   <div class="wrap">
-    <div class="bar"><button class="back" aria-label="Retour" data-go="v-home"><svg class="i"><use href="#i-back"/></svg></button><div><h1>Système</h1><div class="sub">Batterie, réseau et performances</div></div></div>
+    <div class="bar"><button class="back" aria-label="Retour" data-go="v-tests"><svg class="i"><use href="#i-back"/></svg></button><div><h1>Système</h1><div class="sub">Batterie, réseau et performances</div></div></div>
 
     <div class="battery">
       <div class="cell"><i id="batFill"></i></div>
@@ -529,7 +569,7 @@
 <!-- ================= ÉCRAN ================= -->
 <section class="view" id="v-screen">
   <div class="wrap">
-    <div class="bar"><button class="back" aria-label="Retour" data-go="v-home"><svg class="i"><use href="#i-back"/></svg></button><div><h1>Écran</h1><div class="sub">Affichage et tactile</div></div></div>
+    <div class="bar"><button class="back" aria-label="Retour" data-go="v-tests"><svg class="i"><use href="#i-back"/></svg></button><div><h1>Écran</h1><div class="sub">Affichage et tactile</div></div></div>
     <div class="tests">
       <details class="test"><summary><svg class="i t-ic"><use href="#i-palette"/></svg><span class="t-name">Pixels morts</span><span class="pill" data-chip="pixels">À faire</span></summary>
         <div class="t-body"><p>L'écran affiche six couleurs en plein écran. Touche l'écran pour passer à la suivante et cherche les points qui ne changent pas.</p>
@@ -567,7 +607,7 @@
 <!-- ================= CAPTEURS ================= -->
 <section class="view" id="v-sensors">
   <div class="wrap">
-    <div class="bar"><button class="back" aria-label="Retour" data-go="v-home"><svg class="i"><use href="#i-back"/></svg></button><div><h1>Capteurs</h1><div class="sub">Mouvement, orientation et position</div></div></div>
+    <div class="bar"><button class="back" aria-label="Retour" data-go="v-tests"><svg class="i"><use href="#i-back"/></svg></button><div><h1>Capteurs</h1><div class="sub">Mouvement, orientation et position</div></div></div>
     <button class="btn go" style="width:100%;margin-bottom:10px" id="sensBtn" onclick="startSensors()">Activer les capteurs</button>
     <div class="tests">
       <details class="test"><summary><svg class="i t-ic"><use href="#i-accel"/></svg><span class="t-name">Accéléromètre</span><span class="pill" data-chip="accel">À faire</span></summary>
@@ -599,7 +639,7 @@
 <!-- ================= MATÉRIEL ================= -->
 <section class="view" id="v-hw">
   <div class="wrap">
-    <div class="bar"><button class="back" aria-label="Retour" data-go="v-home"><svg class="i"><use href="#i-back"/></svg></button><div><h1>Matériel</h1><div class="sub">Son, image et boutons</div></div></div>
+    <div class="bar"><button class="back" aria-label="Retour" data-go="v-tests"><svg class="i"><use href="#i-back"/></svg></button><div><h1>Matériel</h1><div class="sub">Son, image et boutons</div></div></div>
     <div class="tests">
       <details class="test"><summary><svg class="i t-ic"><use href="#i-speaker"/></svg><span class="t-name">Haut-parleurs</span><span class="pill" data-chip="speaker">À faire</span></summary>
         <div class="t-body"><p>Teste chaque côté, puis lance le balayage : le son monte du grave à l'aigu. Écoute s'il grésille ou s'il coupe.</p>
@@ -900,6 +940,7 @@ function updateScore(){
     document.querySelector(`[data-tick="${id}"]`).style.background = col;
   });
   for (const c in CATS) { const d = CATS[c].filter(id=>results[id]).length; document.querySelector(`[data-count="${c}"]`).textContent = `${d}/${CATS[c].length}`; }
+  if (typeof renderHome === 'function' && $('v-home').classList.contains('on') && !restoring) renderHome();
   const g = computeGrade();
   $('homeGrade').classList.toggle('on', !!g);
   if (g) { $('hgNum').innerHTML = `${g.score}<small>/100</small>`; $('hgNum').style.color = g.color; $('hgLbl').textContent = g.label; }
@@ -927,6 +968,7 @@ const fmtBytes = b => b==null ? '—' : b>=1e9 ? fr(b/1e9)+' Go' : b>=1e6 ? Math
 /* ---------- navigation ---------- */
 function go(v){
   document.querySelectorAll('.view').forEach(x => x.classList.toggle('on', x.id===v));
+  if (v==='v-home') renderHome();
   if (v==='v-report') buildReport();
   window.scrollTo(0,0);
 }
@@ -1557,7 +1599,7 @@ function renderSteps(){
 function updateSteps(){
   const n = STEPS.filter(([id]) => stepsDone[id]).length;
   $('stepsCount').textContent = n ? `${n} étape${n>1?'s':''} faite${n>1?'s':''} sur ${STEPS.length}.` : 'Coche chaque étape une fois faite.';
-  $('optSummary').textContent = n ? `${n}/${STEPS.length} étapes faites` : 'Doublons, gros fichiers, mémoire';
+
 }
 document.addEventListener('change', e => {
   const st = e.target.dataset?.step;
@@ -1718,7 +1760,9 @@ window.nativeBack = () => {
   if ($('modal').classList.contains('on')) { closeModal(); return true; }
   if (ov.classList.contains('on')) { closeOverlay(); return true; }
   if ($('welcome').classList.contains('on')) return false;
-  if (!$('v-home').classList.contains('on')) { if (guide.on) stopGuide(); go('v-home'); return true; }
+  const cur = document.querySelector('.view.on')?.id;
+  if (['v-sys','v-screen','v-sensors','v-hw'].includes(cur)) { if (guide.on) stopGuide(); go('v-tests'); return true; }
+  if (cur !== 'v-home') { if (guide.on) stopGuide(); go('v-home'); return true; }
   return false;
 };
 window.onNativeResume = () => {
@@ -1973,8 +2017,13 @@ function renderBilan(){
   recos.sort((a,b) => b.pts - a.pts);
   $('bilanBody').innerHTML = `<div class="big-score"><div class="num" style="color:${col}">${score}<small>/100</small></div><div class="lbl">${lbl}${partial ? '<br><small style="font:500 13px var(--body);color:var(--mut)">Bilan partiel : lance l\'analyse complète</small>' : ''}</div></div>
     ${recos.length ? `<ul class="recos">${recos.map(r => `<li><i style="background:${r.color}"></i><span>${r.text}</span>${r.btn ? `<button onclick="${r.btn[1]}">${r.btn[0]}</button>` : ''}</li>`).join('')}</ul>` : '<p class="res" style="color:var(--ok);margin:0 0 12px">Rien à signaler.</p>'}`;
-  $('optSummary').textContent = `Bilan ${score}/100`;
   info['Bilan optimisation'] = `${score}/100`;
+  if (!partial || !store.get('bilan', null)) {
+    const junk = scan ? ['trash','apk','thumbs','temp','duplicates'].reduce((a,k) => a + (scan.cats[k]?.size||0), 0) : null;
+    const idle = appsLoaded ? appsData.filter(a => a.lastUsed === -1 || (a.lastUsed > 0 && daysAgo(a.lastUsed) >= 30)).length : null;
+    store.set('bilan', {score, label: lbl, color: col, at: Date.now(), junk, idle, recos: recos.map(r => ({text: r.text, color: r.color}))});
+  }
+  renderHome();
 }
 
 /* --- rappel --- */
@@ -2211,6 +2260,49 @@ window.onNativeUpdate = (status, msg) => {
   renderUpdate();
 };
 
+
+/* =========================================================
+   ACCUEIL : OPTIMISATION EN AVANT
+   ========================================================= */
+function optimizeNow(){
+  if (!NATIVE) { go('v-opt'); return; }
+  go('v-opt');
+  setTimeout(() => { if (!nat('hasAllFiles')) { document.getElementById('cleanSec').scrollIntoView({behavior:'smooth'}); toast('Autorise l\'accès aux fichiers pour le nettoyage automatique'); } analyzeAll(); }, 150);
+}
+function renderHome(){
+  const b = store.get('bilan', null);
+  const arc = $('heroArc'), C = 2 * Math.PI * 84;
+  const tiles = [];
+  const ns = nat('storage');
+  if (ns?.total) tiles.push([Math.round((ns.total - ns.free) / ns.total * 100) + ' %', 'stockage occupé']);
+  if (b) {
+    $('heroNum').innerHTML = `${b.score}<small>/100</small>`;
+    $('heroNum').style.color = b.color; arc.style.stroke = b.color;
+    arc.style.strokeDasharray = `${C * b.score / 100} ${C}`;
+    $('heroTxt').textContent = b.label;
+    const mins = Math.round((Date.now() - b.at) / 60000);
+    $('heroWhen').textContent = 'Dernière analyse ' + (mins < 2 ? 'à l\'instant' : mins < 60 ? `il y a ${mins} min` : mins < 1440 ? `il y a ${Math.round(mins/60)} h` : `il y a ${Math.round(mins/1440)} jour${mins >= 2880 ? 's' : ''}`);
+    if (b.junk != null) tiles.push([fmtBytes(b.junk), 'fichiers inutiles']);
+    if (b.idle != null) tiles.push([String(b.idle), 'applis inutilisées']);
+    $('heroRecos').innerHTML = (b.recos || []).slice(0, 3).map(r => `<li><i style="background:${r.color}"></i><span>${r.text}</span></li>`).join('');
+    $('heroBtn').querySelector('span').textContent = mins > 1440 ? 'Relancer l\'optimisation' : 'Optimiser mon téléphone';
+  } else {
+    $('heroNum').innerHTML = NATIVE ? '?' : '<svg class="i" style="width:52px;height:52px"><use href="#i-broom"/></svg>';
+    $('heroNum').style.color = ''; arc.style.strokeDasharray = `0 ${C}`;
+    $('heroTxt').textContent = NATIVE ? 'Pas encore analysé' : 'Optimisation';
+    $('heroWhen').textContent = NATIVE ? 'Une analyse d\'une minute trouve ce qui ralentit ton téléphone' : 'Doublons, gros fichiers et conseils pour libérer de la place';
+    $('heroRecos').innerHTML = '';
+  }
+  if (!NATIVE) $('heroBtn').querySelector('span').textContent = 'Ouvrir l\'optimisation';
+  $('heroTiles').style.display = tiles.length ? '' : 'none';
+  $('heroTiles').style.gridTemplateColumns = `repeat(${Math.max(1, tiles.length)},1fr)`;
+  $('heroTiles').innerHTML = tiles.map(([v,l]) => `<div><b>${v}</b><small>${l}</small></div>`).join('');
+  // résumé des tests
+  const done = IDS.filter(id => results[id]).length, ko = IDS.filter(id => results[id] === 'ko').length, g = computeGrade();
+  $('testsSummary').textContent = done ? `${done}/${IDS.length} tests effectués${g ? `, note ${g.score}/100` : ''}${ko ? `, ${ko} problème${ko>1?'s':''}` : ''}` : 'Écran, capteurs, son, batterie… en 10 minutes';
+  $('homeTicks').innerHTML = IDS.map(id => `<i style="background:${COLOR[results[id]] || 'var(--line)'}"></i>`).join('');
+}
+
 /* =========================================================
    DÉMARRAGE
    ========================================================= */
@@ -2243,6 +2335,7 @@ function closeWelcome(startNow){
   renderSteps(); initOptMem();
   if (NATIVE && opts.autoUpdate && Date.now() - store.get('lastUpdCheck', 0) > 12*3600e3) setTimeout(() => checkUpdate(true), 2500);
   updateScore();
+  renderHome();
   setTimeout(() => ready = true, 1500);
 })();
 </script>
