@@ -18,10 +18,8 @@
     --body:"Figtree", system-ui, -apple-system, Roboto, sans-serif;
     --r-lg:22px; --r-md:14px; --r-sm:10px;
   }
-  @media (prefers-color-scheme: dark){
-    :root{ --bg:#0E1524; --surface:#172034; --sunk:#1E2940; --line:#2A3651; --ink:#EDF1F8; --mut:#9AA6BD; --faint:#4A5773;
+  :root[data-theme="dark"]{ --bg:#0E1524; --surface:#172034; --sunk:#1E2940; --line:#2A3651; --ink:#EDF1F8; --mut:#9AA6BD; --faint:#4A5773;
       --acc:#6E8BFF; --acc-soft:#22305A; --ok:#3CCB86; --ok-soft:#163A2D; --ko:#FF5A6E; --ko-soft:#43202A; --na:#F2B347; --na-soft:#3B2F17; }
-  }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body)}
   body{min-height:100vh;padding:env(safe-area-inset-top) 0 calc(24px + env(safe-area-inset-bottom))}
@@ -303,8 +301,31 @@
   .modal-box{background:var(--surface);border-radius:22px 22px 0 0;padding:22px 20px calc(18px + env(safe-area-inset-bottom));width:100%;max-width:560px}
   .modal-box h3{font:800 22px/1.2 var(--display);margin:0 0 8px}
   .modal-box p{color:var(--mut);margin:0 0 16px}
+  .set-group{background:var(--surface);border-radius:var(--r-lg);padding:4px 16px;margin-top:10px}
+  .set-group h2{font:700 14px var(--display);color:var(--mut);margin:14px 0 2px}
+  .set-row{display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid var(--line);min-height:56px}
+  .set-group h2 + .set-row{border-top:0}
+  .set-row .t{flex:1;min-width:0}
+  .set-row .t b{display:block;font-weight:600}
+  .set-row .t small{display:block;color:var(--mut);font-size:13px}
+  .set-row button.a{border:0;background:var(--acc-soft);color:var(--acc);border-radius:9px;padding:8px 12px;font-size:14px;font-weight:600;white-space:nowrap}
+  .set-row button.a.red{background:var(--ko-soft);color:var(--ko)}
+  .set-row .st{font-size:13px;font-weight:600;white-space:nowrap}
+  .seg-ctl.small{margin:0}
+  .set-row.stack{flex-wrap:wrap;gap:8px}
+  .set-row.stack .t{flex-basis:100%}
+  .set-row.stack .seg-ctl{width:100%}
+  .seg-ctl.small button{padding:6px 10px;font-size:13px}
+  .badge{position:absolute;top:6px;right:6px;width:10px;height:10px;border-radius:50%;background:var(--ko);border:2px solid var(--bg);display:none}
+  .badge.on{display:block}
+  .update-card{background:var(--acc);color:#fff;border-radius:var(--r-lg);padding:14px 16px;margin-bottom:10px;display:none;align-items:center;gap:12px;border:0;width:100%;text-align:left}
+  .update-card.on{display:flex}
+  .update-card b{display:block}
+  .update-card small{opacity:.85}
+  .upd-box{background:var(--sunk);border-radius:var(--r-md);padding:14px;margin:4px 0 12px}
+  .upd-box .notes{font-size:14px;color:var(--mut);white-space:pre-line;margin:8px 0 12px;max-height:180px;overflow:auto}
   .native-only{display:none}
-  body.native .opt-entry.native-only{display:flex}
+  body.native .opt-entry.native-only, body.native .set-row.native-only{display:flex}
   body.native .native-only{display:block}
   body.native .web-only{display:none}
 
@@ -371,6 +392,8 @@
     <symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 2v5M15 2v5M6 7h12v4a6 6 0 0 1-12 0zM12 17v5"/></symbol>
     <symbol id="i-temp" viewBox="0 0 24 24"><path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z"/><path d="M12 11v6"/></symbol>
     <symbol id="i-disk" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 15h.01M11 15h6"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol>
     <symbol id="i-broom" viewBox="0 0 24 24"><path d="M14 3l-3.5 8M6.5 11h8l1.5 10H5z"/><path d="M8.5 15v6M12.5 15v6"/></symbol>
   </defs>
 </svg>
@@ -395,7 +418,7 @@
     <div class="home-top">
       <div class="brand">Phone Medic</div>
       <div class="device" id="devName">—</div>
-      <button class="icon-btn" id="fbBtn" aria-label="Sons et vibrations" onclick="toggleFeedback()"><svg class="i"><use href="#i-sound"/></svg></button>
+      <button class="icon-btn" id="setBtn" aria-label="Paramètres" data-go="v-settings" style="position:relative"><svg class="i"><use href="#i-gear"/></svg><span class="badge" id="updBadge"></span></button>
     </div>
 
     <div class="gauge">
@@ -411,6 +434,7 @@
       <span><i style="background:var(--na)"></i>Non supporté</span>
     </div>
 
+    <button class="update-card" id="updCard" data-go="v-settings"><svg class="i"><use href="#i-download"/></svg><span style="flex:1"><b id="updCardTitle">Mise à jour disponible</b><small>Touche pour l'installer</small></span><svg class="i"><use href="#i-chev"/></svg></button>
     <div class="grade" id="homeGrade"><b id="hgNum">—</b><span id="hgLbl">—</span></div>
     <button class="start-btn" id="startBtn" onclick="startGuide()"><svg class="i"><use href="#i-play"/></svg><span id="startLbl">Lancer le test complet</span></button>
 
@@ -457,9 +481,9 @@
 
     <div class="tests">
       <details class="test"><summary><svg class="i t-ic"><use href="#i-drain"/></svg><span class="t-name">Usure de la batterie</span><span class="pill" data-chip="drain">À faire</span></summary>
-        <div class="t-body"><p>Mesure la vitesse de décharge pendant 5 minutes, écran allumé. Débranche le chargeur et garde l'appli ouverte.</p>
+        <div class="t-body"><p>Mesure la vitesse de décharge pendant <span class="drMin">5</span> minutes, écran allumé. Débranche le chargeur et garde l'appli ouverte.</p>
           <div class="readout"><div><small>Départ</small><b id="drStart">—</b></div><div><small>Actuel</small><b id="drNow">—</b></div><div><small>Reste</small><b id="drLeft">5:00</b></div></div>
-          <button class="btn go" style="width:100%" id="drBtn" onclick="testDrain()">Mesurer pendant 5 minutes</button>
+          <button class="btn go" style="width:100%" id="drBtn" onclick="testDrain()">Mesurer pendant <span class="drMin">5</span> minutes</button>
           <p class="res" id="drRes" style="margin-top:12px"></p></div></details>
 
       <details class="test"><summary><svg class="i t-ic"><use href="#i-wifi"/></svg><span class="t-name">Connexion</span><span class="pill" data-chip="network">—</span></summary>
@@ -681,6 +705,57 @@
   </div>
 </section>
 
+<!-- ================= PARAMÈTRES ================= -->
+<section class="view" id="v-settings">
+  <div class="wrap">
+    <div class="bar"><button class="back" aria-label="Retour" data-go="v-home"><svg class="i"><use href="#i-back"/></svg></button><div><h1>Paramètres</h1><div class="sub" id="setVersion">—</div></div></div>
+
+    <div class="set-group native-only" id="updGroup">
+      <h2>Mise à jour</h2>
+      <div id="updBody"></div>
+      <label class="set-row switch"><span class="t"><b>Chercher les mises à jour au démarrage</b><small>Une fois par jour, sur ton GitHub phone-medic</small></span><input type="checkbox" id="autoUpd" onchange="setOpt('autoUpdate', this.checked)"></label>
+    </div>
+
+    <div class="set-group">
+      <h2>Affichage</h2>
+      <div class="set-row stack"><span class="t"><b>Thème</b></span>
+        <div class="seg-ctl small" id="themeCtl"><button data-v="auto">Auto</button><button data-v="light">Clair</button><button data-v="dark">Sombre</button></div></div>
+      <div class="set-row stack"><span class="t"><b>Taille du texte</b></span>
+        <div class="seg-ctl small" id="zoomCtl"><button data-v="1">Normale</button><button data-v="1.12">Grande</button><button data-v="1.25">Très grande</button></div></div>
+    </div>
+
+    <div class="set-group">
+      <h2>Tests</h2>
+      <label class="set-row switch"><span class="t"><b>Sons et vibrations</b><small>Petit signal quand un test réussit ou échoue</small></span><input type="checkbox" id="fbSw" onchange="setFeedback(this.checked)"></label>
+      <div class="set-row stack"><span class="t"><b>Durée du test d'usure batterie</b><small>Plus long, c'est plus précis</small></span>
+        <div class="seg-ctl small" id="drainCtl"><button data-v="180">3 min</button><button data-v="300">5 min</button><button data-v="600">10 min</button></div></div>
+      <label class="set-row switch native-only"><span class="t"><b>Rappel de nettoyage</b><small>Chaque dimanche à 18 h</small></span><input type="checkbox" id="remSw2" onchange="toggleReminder(this.checked)"></label>
+      <div class="set-row"><span class="t"><b>Revoir la présentation</b></span><button class="a" onclick="$('welcome').classList.add('on')">Afficher</button></div>
+    </div>
+
+    <div class="set-group native-only">
+      <h2>Autorisations</h2>
+      <div id="permRows"></div>
+      <div class="set-row"><span class="t"><b>Toutes les autorisations</b><small>Caméra, micro, position…</small></span><button class="a" onclick="nat('openAppInfo', nat('packageName'))">Réglages Android</button></div>
+    </div>
+
+    <div class="set-group">
+      <h2>Données</h2>
+      <div class="set-row"><span class="t"><b>Résultats des tests</b><small>Remet tous les tests à « À faire »</small></span><button class="a red" onclick="askReset('tests')">Effacer</button></div>
+      <div class="set-row"><span class="t"><b>Historique</b><small id="histCount">—</small></span><button class="a red" onclick="askReset('history')">Effacer</button></div>
+      <div class="set-row"><span class="t"><b>Tout réinitialiser</b><small>Résultats, historique, réglages</small></span><button class="a red" onclick="askReset('all')">Réinitialiser</button></div>
+    </div>
+
+    <div class="set-group">
+      <h2>À propos</h2>
+      <div class="set-row"><span class="t"><b>Phone Medic</b><small id="aboutVer">—</small></span></div>
+      <div class="set-row"><span class="t"><b>Code source</b><small>github.com/simonpst02-beep/phone-medic</small></span><a class="a" href="https://github.com/simonpst02-beep/phone-medic" style="text-decoration:none"><button class="a">Ouvrir</button></a></div>
+      <div class="set-row"><span class="t"><b>Signaler un problème</b><small>Crée un ticket sur GitHub</small></span><a href="https://github.com/simonpst02-beep/phone-medic/issues/new" style="text-decoration:none"><button class="a">Signaler</button></a></div>
+    </div>
+    <p class="note" style="text-align:center">Tes résultats restent sur ce téléphone.</p>
+  </div>
+</section>
+
 <!-- ================= SÉCURITÉ ================= -->
 <section class="view" id="v-sec">
   <div class="wrap">
@@ -844,11 +919,6 @@ function feedback(st){
   if (st==='ok') { beep([880,1320]); navigator.vibrate?.(30); }
   else { beep([330,220], .16); navigator.vibrate?.([60,60,60]); }
 }
-function toggleFeedback(){
-  settings.feedback = !settings.feedback; store.set('settings', settings);
-  $('fbBtn').classList.toggle('off', !settings.feedback);
-  toast(settings.feedback ? 'Sons et vibrations activés' : 'Sons et vibrations coupés');
-}
 
 function toast(t){ const el=$('toast'); el.textContent=t; el.classList.add('on'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('on'),2400); }
 function rows(id, obj){ $(id).innerHTML = Object.entries(obj).map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join(''); Object.assign(info, obj); }
@@ -931,7 +1001,7 @@ async function initSystem(){
       if (h.model) DEV.model = h.model; if (h.platformVersion && /Android/.test(DEV.os)) DEV.os = 'Android ' + h.platformVersion.split('.')[0]; } catch(e){}
   }
   const nd = nat('device');
-  if (nd) {
+  if (nd && nd.model) {
     const brand = nd.brand ? nd.brand[0].toUpperCase() + nd.brand.slice(1) : '';
     DEV.model = nd.model.toLowerCase().startsWith((nd.brand||'').toLowerCase()) ? nd.model : `${brand} ${nd.model}`;
     DEV.os = 'Android ' + nd.android; DEV.browser = 'Appli Phone Medic';
@@ -1010,7 +1080,7 @@ function batteryNA(){ $('batLevel').textContent='—'; $('batState').textContent
 
 /* --- usure batterie --- */
 const drain = {running:false, start:0, t0:0, timer:null};
-const DRAIN_SEC = 300;
+let DRAIN_SEC = 300;
 function testDrain(fromGuide){
   if (!battery) { if (!fromGuide) toast('Batterie non accessible'); return; }
   if (drain.running) return;
@@ -1020,11 +1090,11 @@ function testDrain(fromGuide){
   $('drStart').textContent = Math.round(drain.start*100)+' %'; $('drNow').textContent = Math.round(drain.start*100)+' %';
   $('drBtn').disabled = true; $('drBtn').textContent = 'Mesure en cours…'; $('drRes').textContent = '';
   let wake; try { navigator.wakeLock?.request('screen').then(w=>wake=w).catch(()=>{}); } catch(e){}
-  if (fromGuide) toast('Mesure de la batterie lancée en arrière-plan (5 min)');
+  if (fromGuide) toast(`Mesure de la batterie lancée en arrière-plan (${DRAIN_SEC/60} min)`);
   drain.timer = setInterval(() => {
     const el = (Date.now()-drain.t0)/1000, left = Math.max(0, DRAIN_SEC-el);
     $('drLeft').textContent = `${Math.floor(left/60)}:${String(Math.floor(left%60)).padStart(2,'0')}`;
-    if (battery.charging) { clearInterval(drain.timer); drain.running=false; nat('keepScreenOn', false); $('drBtn').disabled=false; $('drBtn').textContent='Mesurer pendant 5 minutes'; $('drRes').textContent='Mesure annulée : le chargeur a été branché.'; wake?.release?.(); return; }
+    if (battery.charging) { clearInterval(drain.timer); drain.running=false; nat('keepScreenOn', false); $('drBtn').disabled=false; $('drBtn').innerHTML=`Mesurer pendant ${DRAIN_SEC/60} minutes`; $('drRes').textContent='Mesure annulée : le chargeur a été branché.'; wake?.release?.(); return; }
     if (left <= 0) {
       clearInterval(drain.timer); drain.running = false; wake?.release?.(); nat('keepScreenOn', false);
       let lost = (drain.start - battery.level)*100, precise = false;
@@ -1657,6 +1727,7 @@ window.onNativeResume = () => {
   if (appsLoaded) loadApps(true);
   if (NATIVE) { initOptMem(); renderCleanAccess(); $('remSw').checked = !!nat('reminderEnabled'); }
   if ($('v-sec').classList.contains('on')) loadSecurity();
+  if ($('v-settings').classList.contains('on')) { if (upd.state === 'needperm' && nat('canInstall')) installUpdate(); else renderSettings(); }
 };
 
 /* --- applications --- */
@@ -2024,6 +2095,122 @@ function loadSecurity(){
     ${i.fix ? `<button class="open-btn" onclick="nat('openSettings','${i.fix[1]}')">${i.fix[0]}</button>` : ''}</div></div>`).join('');
 }
 
+
+/* =========================================================
+   PARAMÈTRES ET MISES À JOUR
+   ========================================================= */
+const REPO = 'simonpst02-beep/phone-medic';
+const opts = Object.assign({theme:'auto', zoom:'1', drain:'300', autoUpdate:true}, store.get('opts', {}));
+function setOpt(k, v){ opts[k] = v; store.set('opts', opts); applyOpts(); }
+const darkMQ = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
+window.applyTheme = () => {
+  const sysDark = NATIVE ? !!nat('systemDark') : !!darkMQ?.matches;
+  const dark = opts.theme === 'dark' || (opts.theme === 'auto' && sysDark);
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  const m = document.querySelector('meta[name=theme-color]'); if (m) m.content = dark ? '#0E1524' : '#E9EDF2';
+};
+darkMQ?.addEventListener?.('change', () => applyTheme());
+function segBind(id, key, after){
+  const el = $(id);
+  el.querySelectorAll('button').forEach(b => b.onclick = () => { setOpt(key, b.dataset.v); after?.(b.dataset.v); });
+}
+function applyOpts(){
+  applyTheme();
+  nat('setTheme', opts.theme);
+  document.body.style.zoom = opts.zoom;
+  DRAIN_SEC = +opts.drain;
+  document.querySelectorAll('.drMin').forEach(e => e.textContent = DRAIN_SEC/60);
+  if (!drain.running) $('drLeft').textContent = `${DRAIN_SEC/60}:00`;
+  [['themeCtl','theme'],['zoomCtl','zoom'],['drainCtl','drain']].forEach(([id,k]) => $(id).querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === String(opts[k]))));
+  $('autoUpd').checked = !!opts.autoUpdate;
+  $('fbSw').checked = !!settings.feedback;
+}
+function setFeedback(on){ settings.feedback = on; store.set('settings', settings); }
+segBind('themeCtl','theme'); segBind('zoomCtl','zoom'); segBind('drainCtl','drain');
+
+function renderSettings(){
+  const ver = NATIVE ? `Version ${nat('version')}` : 'Version web';
+  $('setVersion').textContent = ver; $('aboutVer').textContent = ver + (NATIVE ? `, build ${nat('buildNumber')}` : '');
+  const h = store.get('history', []);
+  $('histCount').textContent = h.length ? `${h.length} diagnostic${h.length>1?'s':''} enregistré${h.length>1?'s':''}` : 'Vide';
+  if (NATIVE) {
+    $('remSw2').checked = !!nat('reminderEnabled');
+    const perms = [
+      ['Accès à tous les fichiers', 'Pour le nettoyage automatique', nat('hasAllFiles'), "nat('requestAllFiles')"],
+      ['Données d\'utilisation', 'Pour le cache, les applis inutilisées et le temps d\'écran', nat('usageAccess'), "nat('openSettings','android.settings.USAGE_ACCESS_SETTINGS')"],
+      ['Installer des applis', 'Pour installer les mises à jour de Phone Medic', nat('canInstall'), "nat('openInstallPermission')"],
+    ];
+    $('permRows').innerHTML = perms.map(([t,d,ok,act]) => `<div class="set-row"><span class="t"><b>${t}</b><small>${d}</small></span>${ok ? '<span class="st" style="color:var(--ok)">Autorisé</span>' : `<button class="a" onclick="${act}">Autoriser</button>`}</div>`).join('');
+    renderUpdate();
+  }
+  applyOpts();
+}
+document.addEventListener('click', e => { if (e.target.closest('[data-go="v-settings"]')) setTimeout(renderSettings, 0); });
+
+function askReset(kind){
+  const t = {tests:['Effacer les résultats ?','Tous les tests repassent à « À faire ».'], history:['Effacer l\'historique ?','Les diagnostics enregistrés seront supprimés.'], all:['Tout réinitialiser ?','Résultats, historique et réglages seront effacés. L\'appli redémarre.']}[kind];
+  openModal(t[0], t[1], 'Effacer', () => {
+    if (kind === 'tests') { resetManual(); toast('Résultats effacés'); }
+    if (kind === 'history') { store.set('history', []); renderHistory(); toast('Historique effacé'); }
+    if (kind === 'all') { try { Object.keys(localStorage).filter(k => k.startsWith('diag.')).forEach(k => localStorage.removeItem(k)); } catch(e){} location.reload(); }
+    renderSettings();
+  });
+}
+
+/* --- mises à jour --- */
+const upd = {state:'idle', latest:null, asset:null, error:null, pct:0};
+const myBuild = () => (nat('buildNumber') || 0) - 100;
+async function checkUpdate(silent){
+  if (!NATIVE) return;
+  upd.state = 'checking'; upd.error = null; if (!silent) renderUpdate();
+  try {
+    const r = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`, {cache:'no-store'});
+    if (!r.ok) throw new Error(r.status === 403 ? 'trop de vérifications, réessaie dans une heure' : 'serveur injoignable');
+    const j = await r.json();
+    const n = parseInt((String(j.tag_name).match(/(\d+)\D*$/) || [])[1] || '0');
+    upd.latest = {build:n, name:j.name || j.tag_name, date:j.published_at, notes:(j.body || '').trim()};
+    upd.asset = (j.assets || []).find(a => /\.apk$/i.test(a.name));
+    upd.state = n > myBuild() && upd.asset ? 'available' : 'uptodate';
+    store.set('lastUpdCheck', Date.now());
+  } catch(e){ upd.state = 'error'; upd.error = 'Vérification impossible : ' + e.message + '.'; }
+  const avail = upd.state === 'available';
+  $('updBadge').classList.toggle('on', avail); $('updCard').classList.toggle('on', avail);
+  if (avail) $('updCardTitle').textContent = `${upd.latest.name} disponible`;
+  renderUpdate();
+}
+function renderUpdate(){
+  if (!NATIVE) return;
+  const last = store.get('lastUpdCheck', 0);
+  const when = last ? `Dernière vérification : ${new Date(last).toLocaleString('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}` : 'Jamais vérifié';
+  let h = '';
+  if (upd.state === 'checking') h = `<div class="set-row"><span class="t"><b>Recherche d'une mise à jour…</b></span></div>`;
+  else if (upd.state === 'available') {
+    const notes = upd.latest.notes.split('\n').filter(l => l.trim() && !/^(Co-Authored-By|Claude-Session)/i.test(l)).join('\n');
+    h = `<div class="upd-box"><b>${upd.latest.name.replace(/</g,'&lt;')} est disponible</b><br><small style="color:var(--mut)">Publiée le ${new Date(upd.latest.date).toLocaleDateString('fr-FR',{day:'numeric',month:'long'})}, ${fmtBytes(upd.asset.size)}</small>
+      ${notes ? `<div class="notes">${notes.replace(/</g,'&lt;')}</div>` : '<div style="height:10px"></div>'}
+      <button class="btn go" style="width:100%" onclick="installUpdate()">Télécharger et installer</button></div>`;
+  }
+  else if (upd.state === 'downloading') h = `<div class="upd-box"><b>Téléchargement… ${upd.pct >= 0 ? upd.pct + ' %' : ''}</b><div class="meter" style="margin:10px 0 0"><i style="width:${Math.max(3, upd.pct)}%"></i></div></div>`;
+  else if (upd.state === 'installing') h = `<div class="upd-box"><b>Installation…</b><br><small style="color:var(--mut)">Confirme dans la fenêtre d'Android. L'appli va redémarrer.</small></div>`;
+  else if (upd.state === 'needperm') h = `<div class="upd-box"><b>Une autorisation est nécessaire</b><p style="color:var(--mut);margin:6px 0 12px;font-size:14px">Active « Autoriser cette source » pour Phone Medic, puis reviens ici.</p><button class="btn go" style="width:100%" onclick="nat('openInstallPermission')">Ouvrir le réglage</button></div>`;
+  else h = `<div class="set-row"><span class="t"><b>${upd.state === 'uptodate' ? 'Tu as la dernière version' : upd.state === 'error' ? 'Vérification impossible' : 'Version ' + nat('version')}</b><small>${upd.state === 'error' ? upd.error : when}</small></span><button class="a" onclick="checkUpdate()">Vérifier</button></div>`;
+  $('updBody').innerHTML = h;
+}
+function installUpdate(){
+  if (!upd.asset) return;
+  if (!nat('canInstall')) { upd.state = 'needperm'; renderUpdate(); return; }
+  upd.state = 'downloading'; upd.pct = 0; renderUpdate();
+  nat('downloadAndInstall', upd.asset.browser_download_url);
+}
+window.onNativeUpdateProgress = pct => { upd.pct = pct; const b = $('updBody').querySelector('b'); const i = $('updBody').querySelector('.meter i'); if (b) b.textContent = `Téléchargement… ${pct >= 0 ? pct + ' %' : ''}`; if (i) i.style.width = Math.max(3, pct) + '%'; };
+window.onNativeUpdate = (status, msg) => {
+  if (status === 'installing' || status === 'confirm') upd.state = 'installing';
+  else if (status === 'cancelled') { upd.state = 'available'; toast('Installation annulée'); }
+  else if (status === 'error') { upd.state = 'error'; upd.error = 'La mise à jour a échoué' + (msg ? ' : ' + msg : '') + '.'; }
+  else if (status === 'success') { upd.state = 'uptodate'; }
+  renderUpdate();
+};
+
 /* =========================================================
    DÉMARRAGE
    ========================================================= */
@@ -2040,7 +2227,7 @@ function closeWelcome(startNow){
     for (const [id, st] of Object.entries(s.results || {})) if (MANUAL.includes(id)) mark(id, st);
     restoring = false;
   }
-  if (!settings.feedback) $('fbBtn').classList.add('off');
+  applyOpts();
   if (!store.get('welcomed', false)) $('welcome').classList.add('on');
   if (NATIVE) {
     $('proxTxt').textContent = 'Active les capteurs, puis passe la main devant le haut de l\'écran, près de l\'écouteur, et retire-la.';
@@ -2054,6 +2241,7 @@ function closeWelcome(startNow){
   }
   initSystem();
   renderSteps(); initOptMem();
+  if (NATIVE && opts.autoUpdate && Date.now() - store.get('lastUpdCheck', 0) > 12*3600e3) setTimeout(() => checkUpdate(true), 2500);
   updateScore();
   setTimeout(() => ready = true, 1500);
 })();

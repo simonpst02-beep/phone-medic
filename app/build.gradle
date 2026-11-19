@@ -2,6 +2,8 @@ plugins {
     id 'com.android.application'
 }
 
+def buildNum = (project.findProperty('buildNumber') ?: '0').toString().toInteger()
+
 android {
     namespace 'com.phonemedic.app'
     compileSdk 34
@@ -10,8 +12,9 @@ android {
         applicationId "com.phonemedic.app"
         minSdk 24
         targetSdk 34
-        versionCode 4
-        versionName "1.2.1"
+        // Numéro de build fourni par GitHub Actions : chaque compilation a un numéro plus grand
+        versionCode 100 + buildNum
+        versionName "1.3." + buildNum
     }
 
     signingConfigs {

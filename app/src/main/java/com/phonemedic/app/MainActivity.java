@@ -35,7 +35,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
+import android.app.PendingIntent;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.hardware.Sensor;
@@ -104,6 +108,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     private final Handler ui = new Handler(Looper.getMainLooper());
     private final JunkScanner scanner = new JunkScanner();
     private String pendingView;
+    private static final String ACTION_INSTALL = "com.phonemedic.app.INSTALL_STATUS";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -220,6 +225,24 @@ public class MainActivity extends Activity implements SensorEventListener {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        if (ACTION_INSTALL.equals(intent.getAction())) {
+            int status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE);
+            if (status == PackageInstaller.STATUS_PENDING_USER_ACTION) {
+                Intent confirm = intent.getParcelableExtra(Intent.EXTRA_INTENT);
+                if (confirm != null) {
+                    confirm.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    try { startActivity(confirm); } catch (Exception ignored) {}
+                }
+                js("window.onNativeUpdate && window.onNativeUpdate('confirm','')");
+            } else if (status == PackageInstaller.STATUS_SUCCESS) {
+                js("window.onNativeUpdate && window.onNativeUpdate('success','')");
+            } else {
+                String msg = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE);
+                String kind = status == PackageInstaller.STATUS_FAILURE_ABORTED ? "cancelled" : "error";
+                js("window.onNativeUpdate && window.onNativeUpdate('" + kind + "'," + JSONObject.quote(msg == null ? "" : msg) + ")");
+            }
+            return;
+        }
         String v = intent.getStringExtra("open");
         if (v != null) js("go('" + v.replaceAll("[^\\w-]", "") + "')");
     }
@@ -247,6 +270,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     public void onConfigurationChanged(Configuration c) {
         super.onConfigurationChanged(c);
         applySystemBarColors();
+        js("window.applyTheme && window.applyTheme()");
     }
 
     @Override
@@ -350,8 +374,15 @@ public class MainActivity extends Activity implements SensorEventListener {
         return "application/octet-stream";
     }
 
-    private boolean isDark() {
+    private boolean systemDark() {
         return (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+    }
+
+    private boolean isDark() {
+        String t = getSharedPreferences("phonemedic", MODE_PRIVATE).getString("theme", "auto");
+        if ("dark".equals(t)) return true;
+        if ("light".equals(t)) return false;
+        return systemDark();
     }
 
     @SuppressWarnings("deprecation")
@@ -1014,6 +1045,98 @@ public class MainActivity extends Activity implements SensorEventListener {
         @JavascriptInterface
         public void testReminder() {
             ReminderReceiver.notifyNow(MainActivity.this);
+        }
+
+
+        // ------------------------------------------------ paramètres et mises à jour
+
+        @JavascriptInterface
+        public int buildNumber() {
+            try {
+                PackageInfo pi = getPackageManager().getPackageInfo(getPackageName(), 0);
+                return Build.VERSION.SDK_INT >= 28 ? (int) pi.getLongVersionCode() : pi.versionCode;
+            } catch (Exception e) {
+                return 0;
+            }
+        }
+
+        @JavascriptInterface
+        public String packageName() {
+            return getPackageName();
+        }
+
+        @JavascriptInterface
+        public boolean systemDark() {
+            return MainActivity.this.systemDark();
+        }
+
+        @JavascriptInterface
+        public void setTheme(String mode) {
+            getSharedPreferences("phonemedic", MODE_PRIVATE).edit().putString("theme", mode).apply();
+            ui.post(MainActivity.this::applySystemBarColors);
+        }
+
+        @JavascriptInterface
+        public boolean canInstall() {
+            return Build.VERSION.SDK_INT < 26 || getPackageManager().canRequestPackageInstalls();
+        }
+
+        @JavascriptInterface
+        public void openInstallPermission() {
+            ui.post(() -> {
+                try {
+                    startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + getPackageName())));
+                } catch (Exception e) {
+                    try { startActivity(new Intent(Settings.ACTION_SECURITY_SETTINGS)); } catch (Exception ignored) {}
+                }
+            });
+        }
+
+        // Télécharge l'APK et l'installe par-dessus l'appli. Progression : window.onNativeUpdateProgress(pct)
+        @JavascriptInterface
+        public void downloadAndInstall(String url) {
+            new Thread(() -> {
+                PackageInstaller.Session session = null;
+                try {
+                    if (!url.startsWith("https://github.com/") && !url.startsWith("https://objects.githubusercontent.com/"))
+                        throw new Exception("Adresse refusée");
+                    HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+                    c.setInstanceFollowRedirects(true);
+                    c.setConnectTimeout(15000);
+                    c.setReadTimeout(30000);
+                    c.connect();
+                    if (c.getResponseCode() != 200) throw new Exception("Téléchargement refusé (" + c.getResponseCode() + ")");
+                    long total = c.getContentLengthLong();
+                    PackageInstaller pi = getPackageManager().getPackageInstaller();
+                    PackageInstaller.SessionParams params = new PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL);
+                    params.setAppPackageName(getPackageName());
+                    if (total > 0) params.setSize(total);
+                    int id = pi.createSession(params);
+                    session = pi.openSession(id);
+                    try (InputStream in = c.getInputStream(); OutputStream out = session.openWrite("update.apk", 0, total > 0 ? total : -1)) {
+                        byte[] buf = new byte[64 * 1024];
+                        long done = 0;
+                        int n, last = -1;
+                        while ((n = in.read(buf)) > 0) {
+                            out.write(buf, 0, n);
+                            done += n;
+                            int pct = total > 0 ? (int) (done * 100 / total) : -1;
+                            if (pct != last) { last = pct; js("window.onNativeUpdateProgress && window.onNativeUpdateProgress(" + pct + ")"); }
+                        }
+                        session.fsync(out);
+                    }
+                    Intent cb = new Intent(MainActivity.this, MainActivity.class).setAction(ACTION_INSTALL);
+                    int flags = PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_MUTABLE : 0);
+                    PendingIntent pend = PendingIntent.getActivity(MainActivity.this, 7, cb, flags);
+                    session.commit(pend.getIntentSender());
+                    session.close();
+                    session = null;
+                    js("window.onNativeUpdate && window.onNativeUpdate('installing','')");
+                } catch (Exception e) {
+                    if (session != null) session.abandon();
+                    js("window.onNativeUpdate && window.onNativeUpdate('error'," + JSONObject.quote(String.valueOf(e.getMessage())) + ")");
+                }
+            }).start();
         }
 
         @JavascriptInterface
