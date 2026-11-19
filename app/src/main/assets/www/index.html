@@ -478,6 +478,7 @@
       <details class="test"><summary><svg class="i t-ic"><use href="#i-disk"/></svg><span class="t-name">Vitesse du stockage</span><span class="pill" data-chip="storagespeed">À faire</span></summary>
         <div class="t-body"><div class="readout two native-only"><div><small>Écriture</small><b id="ssW">—</b></div><div><small>Lecture</small><b id="ssR">—</b></div></div>
           <button class="btn go native-only" style="width:100%" id="ssBtn" onclick="testStorageSpeed()">Mesurer la vitesse</button>
+          <p class="res native-only" id="ssRes" style="margin-top:12px"></p>
           <p class="native-only" style="margin-top:12px">Écrit puis relit 128 Mo, puis les efface. Une mémoire lente rend tout le téléphone poussif.</p>
           <p class="web-only">Disponible dans la version APK.</p></div></details>
 
@@ -1922,8 +1923,17 @@ window.onNativeSpeed = r => {
   if (!r || r.error) { toast('Mesure impossible'); return mark('storagespeed','na'); }
   $('ssW').textContent = Math.round(r.write) + ' Mo/s'; $('ssR').textContent = Math.round(r.read) + ' Mo/s';
   const d = `écriture ${Math.round(r.write)} Mo/s, lecture ${Math.round(r.read)} Mo/s`;
+  // Repères : mémoire UFS (milieu et haut de gamme) > 100 Mo/s, eMMC (entrée de gamme) 20 à 90 Mo/s
+  const ns = nat('storage'), full = ns?.total ? (ns.total - ns.free) / ns.total : 0;
+  let txt, st;
+  if (r.write >= 100) { txt = 'Mémoire rapide, comme sur les téléphones milieu et haut de gamme.'; st = 'ok'; }
+  else if (r.write >= 40) { txt = 'Vitesse correcte.'; st = 'ok'; }
+  else if (r.write >= 12) { txt = 'Vitesse modeste, normale pour un téléphone d\'entrée de gamme.'; st = 'ok'; }
+  else { txt = 'Mémoire très lente : elle peut être usée, ou le stockage trop plein.'; st = 'ko'; }
+  if (full >= .9) txt += ' Ton stockage est plein à plus de 90 %, ce qui ralentit l\'écriture : libère de la place puis refais le test.';
+  $('ssRes').textContent = txt; $('ssRes').style.color = st === 'ok' ? 'var(--ok)' : 'var(--ko)';
   info['Vitesse du stockage'] = d;
-  mark('storagespeed', r.write >= 40 ? 'ok' : 'ko', {detail: d});
+  mark('storagespeed', st, {detail: d});
 };
 const THERMAL = ['Normal','Tiède','Chaud','Très chaud','Critique','Urgence','Arrêt'];
 function testThermal(){
