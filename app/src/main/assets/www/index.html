@@ -341,6 +341,22 @@
   .hero .start-btn{margin:4px 0 0}
   .hero-link{border:0;background:none;color:var(--acc);font-weight:600;font-size:14px;padding:12px 0 4px;width:100%}
   .tests-entry .ticks{margin-top:8px}
+  .apps-tools{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--mut);margin:10px 0 2px}
+  .apps-tools button{border:0;background:none;color:var(--acc);font-weight:600;font-size:13px;padding:4px 0}
+  .apps-list{margin-top:6px}
+  .app-item{border-top:1px solid var(--line)}
+  .app-item:first-child{border-top:0}
+  .app-line{display:flex;align-items:center;gap:10px;min-height:52px}
+  .app-line input{width:20px;height:20px;accent-color:var(--ko);flex:none;margin:0}
+  .app-main{flex:1;min-width:0;border:0;background:none;text-align:left;padding:8px 0}
+  .app-main .n{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .app-main .m{display:block;font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .app-main .m .warn{color:var(--na);font-weight:600}
+  .app-size{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:14px}
+  .app-actions{display:flex;gap:8px;padding:0 0 12px 30px}
+  .app-actions button{flex:1;border:0;border-radius:10px;padding:9px;background:var(--sunk);font-weight:600;font-size:14px}
+  .app-actions button.red{color:var(--ko)}
+  .more-btn{width:100%;border:0;background:var(--sunk);border-radius:10px;padding:11px;font-weight:600;color:var(--acc);margin-top:6px}
   .native-only{display:none}
   body.native .opt-entry.native-only, body.native .set-row.native-only{display:flex}
   body.native .native-only{display:block}
@@ -707,7 +723,7 @@
 
     <div class="sec native-only" id="appsSec">
       <h2>Applications</h2>
-      <p>Repère les applis lourdes, celles qui gardent un gros cache et celles que tu n'ouvres plus. Coche-les pour les désinstaller à la suite.</p>
+      <p>Les applis à trier en priorité. Touche une appli pour la nettoyer, coche-en plusieurs pour les désinstaller d'un coup.</p>
       <div id="appsAccess"></div>
       <button class="btn go" id="appsBtn" style="width:100%" onclick="loadApps()">Analyser mes applis</button>
       <div id="appsResult"></div>
@@ -1775,7 +1791,7 @@ window.onNativeResume = () => {
 };
 
 /* --- applications --- */
-let appsLoaded = false, appsData = [], appsSort = 'size';
+let appsLoaded = false, appsData = [], appsSort = 'todo';
 const daysAgo = t => Math.floor((Date.now() - t) / 864e5);
 function loadApps(silent){
   const access = nat('usageAccess');
@@ -1789,32 +1805,43 @@ window.onNativeApps = list => {
   $('appsBtn').disabled = false; $('appsBtn').textContent = 'Actualiser';
   renderApps();
 };
-function setAppsSort(s){ appsSort = s; renderApps(); }
+function setAppsSort(s){ appsSort = s; appsShowAll = false; appsOpen = null; renderApps(); }
+let appsShowAll = false, appsOpen = null;
+function toggleAppRow(pkg){ appsOpen = appsOpen === pkg ? null : pkg; renderApps(); }
 function renderApps(){
   const size = a => a.app != null ? a.app + (a.data||0) : a.apk;
   const unused = a => a.lastUsed === -1 ? 999 : a.lastUsed > 0 ? daysAgo(a.lastUsed) : null;
   const access = appsData.some(a => a.cache != null) || appsData.some(a => a.lastUsed > 0);
   const totalCache = appsData.reduce((s,a) => s + (a.cache||0), 0);
   const idle = access ? appsData.filter(a => (unused(a) ?? 0) >= 30) : [];
-  const sorted = [...appsData].sort((a,b) => appsSort==='cache' ? (b.cache||0)-(a.cache||0) : appsSort==='unused' ? (unused(b)??-1)-(unused(a)??-1) : size(b)-size(a));
+  // « À trier » : applis pas ouvertes depuis 30 jours ou avec un gros cache
+  const todo = a => (unused(a) ?? 0) >= 30 || (a.cache||0) >= 2e8;
+  if (!access && appsSort === 'todo') appsSort = 'size';
+  const list = appsSort === 'todo' ? appsData.filter(todo).sort((a,b) => size(b)-size(a))
+    : [...appsData].sort((a,b) => appsSort==='cache' ? (b.cache||0)-(a.cache||0) : size(b)-size(a));
+  const LIMIT = 5, shown = appsShowAll ? list : list.slice(0, LIMIT);
   let h = `<div class="found"><div><b>${appsData.length}</b><small>applis installées</small></div>
     <div><b>${access ? fmtBytes(totalCache) : '—'}</b><small>de cache</small></div>
     <div><b>${access ? idle.length : '—'}</b><small>pas ouvertes depuis 30 j</small></div></div>
-    <div class="seg-ctl"><button class="${appsSort==='size'?'on':''}" onclick="setAppsSort('size')">Plus lourdes</button>
-    <button class="${appsSort==='cache'?'on':''}" onclick="setAppsSort('cache')" ${access?'':'disabled'}>Cache</button>
-    <button class="${appsSort==='unused'?'on':''}" onclick="setAppsSort('unused')" ${access?'':'disabled'}>Inutilisées</button></div>`;
-  h += sorted.slice(0, 40).map(a => {
-    const u = unused(a), sub = [];
-    if (a.cache != null) sub.push(`cache ${fmtBytes(a.cache)}`);
-    if (u === 999) sub.push('<span class="warn">pas ouverte depuis 6 mois</span>');
-    else if (u != null) sub.push(u >= 30 ? `<span class="warn">ouverte il y a ${u} jours</span>` : u === 0 ? 'ouverte aujourd\'hui' : `ouverte il y a ${u} j`);
-    const safe = a.pkg.replace(/[^\w.]/g,'');
-    return `<div class="app-row"><div class="app-top"><label style="display:flex;gap:10px;align-items:center;min-width:0"><input type="checkbox" style="width:20px;height:20px;accent-color:var(--ko);flex:none" data-app="${safe}" ${appsSel.has(safe)?'checked':''} onchange="selApp('${safe}',this.checked)"><b>${a.name.replace(/</g,'&lt;')}</b></label><span>${fmtBytes(size(a))}</span></div>
-      <div class="app-sub">${sub.join(', ') || 'taille de l\'appli seule'}</div>
-      <div class="row"><button class="btn" onclick="nat('openAppInfo','${safe}')">Vider le cache</button><button class="btn" style="color:var(--ko)" onclick="nat('uninstall','${safe}')">Désinstaller</button></div></div>`;
-  }).join('');
-  if (sorted.length > 40) h += `<p class="note">Les 40 premières applis sont affichées.</p>`;
-  if (idle.length) h = h.replace('<div class="seg-ctl">', `<button class="btn" style="width:100%;margin-top:10px" onclick="selectIdle()">Cocher les ${idle.length} applis pas ouvertes depuis 30 jours</button><div class="seg-ctl">`);
+    <div class="seg-ctl">${access ? `<button class="${appsSort==='todo'?'on':''}" onclick="setAppsSort('todo')">À trier${appsData.filter(todo).length ? ` (${appsData.filter(todo).length})` : ''}</button>` : ''}
+    <button class="${appsSort==='size'?'on':''}" onclick="setAppsSort('size')">Plus lourdes</button>
+    ${access ? `<button class="${appsSort==='cache'?'on':''}" onclick="setAppsSort('cache')">Cache</button>` : ''}</div>`;
+  if (appsSort === 'todo' && !list.length) h += `<p class="res" style="color:var(--ok);margin:12px 0 4px">Rien à trier : tes applis servent toutes et aucune ne garde un gros cache.</p>`;
+  if (appsSort === 'todo' && idle.length) h += `<div class="apps-tools"><span>Applis pas ouvertes depuis 30 jours</span><button onclick="selectIdle()">Tout cocher</button></div>`;
+  h += `<div class="apps-list">` + shown.map(a => {
+    const u = unused(a), meta = [];
+    if (u === 999) meta.push('<span class="warn">pas ouverte depuis 6 mois</span>');
+    else if (u != null && u >= 30) meta.push(`<span class="warn">pas ouverte depuis ${u} j</span>`);
+    else if (u != null) meta.push(u === 0 ? 'ouverte aujourd\'hui' : `ouverte il y a ${u} j`);
+    if ((a.cache||0) >= 5e7) meta.push(`cache ${fmtBytes(a.cache)}`);
+    const safe = a.pkg.replace(/[^\w.]/g,''), open = appsOpen === safe;
+    return `<div class="app-item${open?' open':''}">
+      <div class="app-line"><input type="checkbox" data-app="${safe}" ${appsSel.has(safe)?'checked':''} onchange="selApp('${safe}',this.checked)" aria-label="Sélectionner ${a.name.replace(/"/g,'')}">
+        <button class="app-main" onclick="toggleAppRow('${safe}')"><span class="n">${a.name.replace(/</g,'&lt;')}</span><span class="m">${meta.join(', ') || '&nbsp;'}</span></button>
+        <span class="app-size">${fmtBytes(size(a))}</span></div>
+      ${open ? `<div class="app-actions"><button onclick="nat('openAppInfo','${safe}')">Vider le cache</button><button class="red" onclick="nat('uninstall','${safe}')">Désinstaller</button></div>` : ''}</div>`;
+  }).join('') + `</div>`;
+  if (list.length > LIMIT) h += `<button class="more-btn" onclick="appsShowAll=!appsShowAll;renderApps()">${appsShowAll ? 'Réduire la liste' : `Voir les ${list.length - LIMIT} autres`}</button>`;
   h += `<div class="clean-bar" id="unBar" style="${appsSel.size?'':'display:none'}"><button class="btn" onclick="uninstallSelected()">Désinstaller la sélection (${appsSel.size})</button></div>`;
   $('appsResult').innerHTML = h;
 }
