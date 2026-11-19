@@ -108,6 +108,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     private final Handler ui = new Handler(Looper.getMainLooper());
     private final JunkScanner scanner = new JunkScanner();
     private String pendingView;
+    static String pendingAutoResult;
     private static final String ACTION_INSTALL = "com.phonemedic.app.INSTALL_STATUS";
 
     @Override
@@ -150,6 +151,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 
             @Override
             public void onPageFinished(WebView view, String url) {
+                deliverAutoResult();
                 if (pendingView != null) {
                     js("window.closeWelcome && document.getElementById('welcome').classList.contains('on') && closeWelcome(false); go('" + pendingView.replaceAll("[^\\w-]", "") + "')");
                     pendingView = null;
@@ -210,6 +212,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         });
 
         pendingView = getIntent().getStringExtra("open");
+        if (getIntent().getStringExtra("autoResult") != null) pendingAutoResult = getIntent().getStringExtra("autoResult");
         if (savedInstanceState != null) web.restoreState(savedInstanceState);
         else web.loadUrl(START_URL);
     }
@@ -243,6 +246,8 @@ public class MainActivity extends Activity implements SensorEventListener {
             }
             return;
         }
+        String ar = intent.getStringExtra("autoResult");
+        if (ar != null) { pendingAutoResult = ar; deliverAutoResult(); }
         String v = intent.getStringExtra("open");
         if (v != null) js("go('" + v.replaceAll("[^\\w-]", "") + "')");
     }
@@ -250,6 +255,9 @@ public class MainActivity extends Activity implements SensorEventListener {
     @Override
     protected void onResume() {
         super.onResume();
+        // Retour dans l'appli pendant une série automatique : l'utilisateur l'interrompt
+        if (AutoCleanService.running) AutoCleanService.stop();
+        deliverAutoResult();
         if (web != null) js("window.onNativeResume && window.onNativeResume()");
     }
 
@@ -412,6 +420,13 @@ public class MainActivity extends Activity implements SensorEventListener {
         } catch (Throwable t) {
             return -1;
         }
+    }
+
+    private void deliverAutoResult() {
+        String r = pendingAutoResult;
+        if (r == null || web == null) return;
+        pendingAutoResult = null;
+        js("window.onNativeAuto && window.onNativeAuto(" + r + ")");
     }
 
     private boolean allFilesGranted() {
@@ -1137,6 +1152,35 @@ public class MainActivity extends Activity implements SensorEventListener {
                     js("window.onNativeUpdate && window.onNativeUpdate('error'," + JSONObject.quote(String.valueOf(e.getMessage())) + ")");
                 }
             }).start();
+        }
+
+
+        // ------------------------------------------------ automatisation (service d'accessibilité)
+
+        @JavascriptInterface
+        public boolean autoAvailable() {
+            return AutoCleanService.instance != null;
+        }
+
+        @JavascriptInterface
+        public boolean startAuto(String mode, String pkgsJson) {
+            try {
+                JSONArray a = new JSONArray(pkgsJson);
+                List<String> list = new ArrayList<>();
+                for (int i = 0; i < a.length(); i++) {
+                    String p = a.getString(i);
+                    if (!p.equals(getPackageName())) list.add(p);
+                }
+                final boolean[] ok = {false};
+                final Object lock = new Object();
+                ui.post(() -> {
+                    synchronized (lock) { ok[0] = AutoCleanService.start("uninstall".equals(mode) ? "uninstall" : "cache", list); lock.notify(); }
+                });
+                synchronized (lock) { lock.wait(2000); }
+                return ok[0];
+            } catch (Exception e) {
+                return false;
+            }
         }
 
         @JavascriptInterface

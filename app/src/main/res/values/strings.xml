@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auto_label">Phone Medic : nettoyage automatique</string>
+    <string name="auto_summary">Vide le cache et désinstalle les applis que tu as choisies</string>
+    <string name="auto_desc">Quand tu lances un nettoyage automatique depuis Phone Medic, ce service ouvre la fiche de chaque appli choisie dans les réglages et appuie à ta place sur « Vider le cache » ou sur « OK » pour la désinstaller. Il n\'agit que pendant ces séries, ne lit rien d\'autre et n\'envoie aucune donnée.</string>
+</resources>

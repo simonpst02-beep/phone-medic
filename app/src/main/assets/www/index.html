@@ -341,6 +341,11 @@
   .hero .start-btn{margin:4px 0 0}
   .hero-link{border:0;background:none;color:var(--acc);font-weight:600;font-size:14px;padding:12px 0 4px;width:100%}
   .tests-entry .ticks{margin-top:8px}
+  .auto-card{background:var(--acc-soft);border-radius:var(--r-md);padding:14px;margin:12px 0 4px}
+  .auto-card b{display:block;font-weight:700}
+  .auto-card small{display:block;color:var(--mut);font-size:14px;margin:2px 0 10px}
+  .auto-card .btn:disabled{opacity:.45}
+  .auto-card.on{background:var(--ok-soft)}
   .apps-tools{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--mut);margin:10px 0 2px}
   .apps-tools button{border:0;background:none;color:var(--acc);font-weight:600;font-size:13px;padding:4px 0}
   .apps-list{margin-top:6px}
@@ -1800,8 +1805,59 @@ function loadApps(silent){
   if (!silent) { $('appsBtn').disabled = true; $('appsBtn').textContent = 'Analyse en cours…'; }
   nat('apps');
 }
+
+/* --- automatisation : vider le cache et désinstaller sans toucher l'écran --- */
+let autoPending = null;
+function autoCard(access, size){
+  const big = appsData.filter(a => (a.cache||0) >= 1e7);
+  const bigTotal = big.reduce((s,a) => s + a.cache, 0);
+  if (!nat('autoAvailable')) {
+    return `<div class="auto-card"><b>Automatiser le nettoyage</b>
+      <small>Phone Medic peut vider le cache de toutes tes applis et désinstaller celles que tu coches, sans que tu aies à toucher chaque bouton. Il faut activer son service dans les réglages d'accessibilité.</small>
+      <button class="btn go" onclick="enableAuto()">Activer l'automatisation</button></div>`;
+  }
+  return `<div class="auto-card on"><b>Nettoyage automatique activé</b>
+    <small>${access ? (big.length ? `${big.length} appli${big.length>1?'s':''} gardent ${fmtBytes(bigTotal)} de cache.` : 'Aucune appli ne garde de cache important.') : 'Autorise l\'accès aux données d\'utilisation pour voir la taille du cache.'}</small>
+    <div class="row"><button class="btn go" ${access && big.length ? '' : 'disabled'} onclick="autoClearCache()">Vider tous les caches</button>
+    <button class="btn" ${appsSel.size ? '' : 'disabled'} onclick="uninstallSelected()">Désinstaller la sélection${appsSel.size ? ` (${appsSel.size})` : ''}</button></div></div>`;
+}
+function enableAuto(){
+  openModal('Activer l\'automatisation',
+    'Dans la page qui s\'ouvre, touche « Phone Medic : nettoyage automatique » puis active-le. Si Android affiche « Paramètre restreint », va dans Réglages › Applications › Phone Medic › ⋮ › « Autoriser les paramètres restreints », puis recommence.',
+    'Ouvrir les réglages', () => nat('openSettings', 'android.settings.ACCESSIBILITY_SETTINGS'));
+  $('mdOk').style.background = 'var(--acc)';
+}
+function autoClearCache(){
+  const list = appsData.filter(a => (a.cache||0) >= 1e7).sort((a,b) => b.cache - a.cache).slice(0, 40);
+  const total = list.reduce((s,a) => s + a.cache, 0);
+  openModal(`Vider le cache de ${list.length} appli${list.length>1?'s':''} ?`,
+    `Environ ${fmtBytes(total)} seront libérés. Tes comptes, photos et messages ne sont pas touchés. Les réglages vont défiler tout seuls pendant environ ${Math.ceil(list.length * 3 / 60)} min : ne touche pas l'écran, ou reviens dans Phone Medic pour arrêter.`,
+    'Vider les caches', () => runAuto('cache', list.map(a => a.pkg)));
+  $('mdOk').style.background = 'var(--acc)';
+}
+function runAuto(mode, pkgs){
+  autoPending = {mode, before: appsData.reduce((s,a) => s + (a.cache||0), 0), count: pkgs.length};
+  if (!nat('startAuto', mode, JSON.stringify(pkgs))) { autoPending = null; toast('Le service d\'automatisation n\'est pas actif'); renderApps(); }
+}
+window.onNativeAuto = r => {
+  if (!r) return;
+  const what = r.mode === 'uninstall' ? 'désinstallée' : 'nettoyée';
+  let msg = `${r.done} appli${r.done>1?'s':''} ${what}${r.done>1?'s':''}`;
+  if (r.skipped) msg += `, ${r.skipped} ignorée${r.skipped>1?'s':''}`;
+  if (r.interrupted) msg = 'Série arrêtée. ' + msg;
+  toast(msg);
+  if (r.done) feedback('ok');
+  if (r.mode === 'uninstall') { appsSel.clear(); }
+  go('v-opt'); setTimeout(() => document.getElementById('appsSec').scrollIntoView({behavior:'smooth'}), 200);
+  loadApps(true);
+};
 window.onNativeApps = list => {
   appsLoaded = true; appsData = list || [];
+  if (autoPending && autoPending.mode === 'cache') {
+    const freed = autoPending.before - appsData.reduce((s,a) => s + (a.cache||0), 0);
+    if (freed > 0) { toast(`${fmtBytes(freed)} de cache libérés`); const t = (store.get('freedTotal', 0) || 0) + freed; store.set('freedTotal', t); }
+  }
+  autoPending = null;
   $('appsBtn').disabled = false; $('appsBtn').textContent = 'Actualiser';
   renderApps();
 };
@@ -1826,6 +1882,7 @@ function renderApps(){
     <div class="seg-ctl">${access ? `<button class="${appsSort==='todo'?'on':''}" onclick="setAppsSort('todo')">À trier${appsData.filter(todo).length ? ` (${appsData.filter(todo).length})` : ''}</button>` : ''}
     <button class="${appsSort==='size'?'on':''}" onclick="setAppsSort('size')">Plus lourdes</button>
     ${access ? `<button class="${appsSort==='cache'?'on':''}" onclick="setAppsSort('cache')">Cache</button>` : ''}</div>`;
+  h = h.replace('<div class="seg-ctl">', autoCard(access, size) + '<div class="seg-ctl">');
   if (appsSort === 'todo' && !list.length) h += `<p class="res" style="color:var(--ok);margin:12px 0 4px">Rien à trier : tes applis servent toutes et aucune ne garde un gros cache.</p>`;
   if (appsSort === 'todo' && idle.length) h += `<div class="apps-tools"><span>Applis pas ouvertes depuis 30 jours</span><button onclick="selectIdle()">Tout cocher</button></div>`;
   h += `<div class="apps-list">` + shown.map(a => {
@@ -1851,7 +1908,7 @@ function renderApps(){
    OPTIMISATION AUTOMATIQUE (appli Android)
    ========================================================= */
 const appsSel = new Set();
-function selApp(pkg, on){ on ? appsSel.add(pkg) : appsSel.delete(pkg); const b = $('unBar'); if (b) { b.style.display = appsSel.size ? '' : 'none'; b.querySelector('button').textContent = `Désinstaller la sélection (${appsSel.size})`; } }
+function selApp(pkg, on){ on ? appsSel.add(pkg) : appsSel.delete(pkg); if (nat('autoAvailable')) { renderApps(); return; } const b = $('unBar'); if (b) { b.style.display = appsSel.size ? '' : 'none'; b.querySelector('button').textContent = `Désinstaller la sélection (${appsSel.size})`; } }
 function selectIdle(){
   appsData.forEach(a => { const u = a.lastUsed === -1 ? 999 : a.lastUsed > 0 ? daysAgo(a.lastUsed) : 0; if (u >= 30) appsSel.add(a.pkg.replace(/[^\w.]/g,'')); });
   renderApps(); toast(`${appsSel.size} applis cochées. Vérifie la liste avant de désinstaller.`);
@@ -1859,6 +1916,12 @@ function selectIdle(){
 const unQueue = {active:false, list:[], current:null, done:0};
 function uninstallSelected(){
   if (!appsSel.size) return;
+  if (nat('autoAvailable')) {
+    const n = appsSel.size;
+    return openModal(`Désinstaller ${n} appli${n>1?'s':''} automatiquement ?`,
+      'Phone Medic va confirmer chaque désinstallation à ta place. Les données de ces applis seront supprimées. Reviens dans Phone Medic pour arrêter.',
+      'Désinstaller', () => runAuto('uninstall', [...appsSel]));
+  }
   openModal('Désinstaller ' + appsSel.size + ' appli' + (appsSel.size>1?'s':'') + ' ?',
     'Android va te demander de confirmer chaque appli, une par une. Les données de ces applis seront supprimées.',
     'Commencer', () => { unQueue.active = true; unQueue.list = [...appsSel]; unQueue.done = 0; unQueue.current = null; uninstallNext(); });
@@ -1871,7 +1934,7 @@ function uninstallNext(){
 }
 
 function openModal(title, text, okLabel, onOk){
-  $('mdTitle').textContent = title; $('mdText').textContent = text; $('mdOk').textContent = okLabel;
+  $('mdTitle').textContent = title; $('mdText').textContent = text; $('mdOk').textContent = okLabel; $('mdOk').style.background = '';
   $('mdOk').onclick = () => { closeModal(); onOk(); };
   $('modal').classList.add('on');
 }
@@ -2155,7 +2218,7 @@ function loadSecurity(){
     r.adb ? 'Le débogage USB est activé : un ordinateur branché peut accéder au téléphone.' : r.devOptions ? 'Activées. Sans risque si tu sais pourquoi, sinon désactive-les.' : 'Désactivées.',
     r.adb || r.devOptions ? ['Ouvrir', 'android.settings.APPLICATION_DEVELOPMENT_SETTINGS'] : null);
   add(r.root ? 'warn' : 'ok', 'Accès root', r.root ? 'Le téléphone semble rooté : les protections d\'Android sont contournables.' : 'Non détecté.', null);
-  const acc = r.accessibility || [];
+  const acc = (r.accessibility || []).filter(a => a.pkg !== nat('packageName'));
   add(acc.length ? 'warn' : 'ok', 'Services d\'accessibilité', acc.length ? 'Ces applis peuvent lire l\'écran et agir à ta place. Vérifie que tu les reconnais toutes :' : 'Aucune appli ne contrôle l\'écran.', acc.length ? ['Vérifier', 'android.settings.ACCESSIBILITY_SETTINGS'] : null, acc);
   const adm = (r.admins || []).filter(a => !KNOWN_ADMIN.includes(a.pkg));
   add(adm.length ? 'warn' : 'ok', 'Administrateurs de l\'appareil', adm.length ? 'Ces applis ont des droits étendus (effacer, verrouiller) :' : 'Seuls les services habituels.', adm.length ? ['Vérifier', 'android.settings.SECURITY_SETTINGS'] : null, adm);
