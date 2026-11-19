@@ -251,7 +251,60 @@
   .app-sub .warn{color:var(--na);font-weight:600}
   .app-row .row button{min-height:40px;padding:8px 10px;font-size:14px}
   .open-btn{border:0;background:var(--acc-soft);color:var(--acc);border-radius:8px;padding:5px 10px;font-size:13px;font-weight:600;margin:6px 6px 0 0}
+  .cleanup{border-top:1px solid var(--line)}
+  .cl-head{display:flex;align-items:flex-start;gap:12px;padding:12px 0}
+  .cl-head input{width:22px;height:22px;accent-color:var(--acc);flex:none;margin:2px 0 0}
+  .cl-head .t{flex:1;min-width:0}
+  .cl-head .t b{display:block;font-weight:600}
+  .cl-head .t small{display:block;color:var(--mut);font-size:13px}
+  .cl-head .sz{text-align:right;white-space:nowrap}
+  .cl-head .sz b{display:block;font-variant-numeric:tabular-nums}
+  .cl-head .sz small{color:var(--mut);font-size:12px}
+  .cl-more{border:0;background:none;color:var(--acc);font-size:13px;font-weight:600;padding:0 0 10px 34px}
+  .cl-list{list-style:none;margin:0 0 10px 34px;padding:0;max-height:260px;overflow:auto;border-radius:10px;background:var(--sunk)}
+  .cl-list li{display:flex;gap:8px;align-items:center;padding:7px 10px;font-size:13px;border-bottom:1px solid var(--line)}
+  .cl-list li:last-child{border-bottom:0}
+  .cl-list li span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:rtl;text-align:left}
+  .cl-list input{accent-color:var(--acc);flex:none}
+  .clean-bar{position:sticky;bottom:calc(10px + env(safe-area-inset-bottom));margin-top:10px}
+  .clean-bar .btn{width:100%;background:var(--ko);color:#fff;font-size:16px;min-height:54px;box-shadow:0 6px 20px rgba(0,0,0,.18)}
+  .clean-bar .btn:disabled{background:var(--faint)}
+  .big-score{display:flex;align-items:center;gap:16px;margin:4px 0 10px}
+  .big-score .num{font:800 58px/1 var(--display);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+  .big-score .num small{font-size:.36em;color:var(--mut);font-weight:500;letter-spacing:0}
+  .big-score .lbl{font:700 18px/1.25 var(--display)}
+  .recos{list-style:none;margin:0;padding:0}
+  .recos li{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line);font-size:15px}
+  .recos li i{width:9px;height:9px;border-radius:50%;flex:none}
+  .recos li span{flex:1}
+  .recos li button{border:0;background:var(--acc-soft);color:var(--acc);border-radius:8px;padding:6px 10px;font-size:13px;font-weight:600;white-space:nowrap}
+  .bars{list-style:none;margin:8px 0 0;padding:0}
+  .bars li{padding:6px 0;font-size:14px}
+  .bars .l{display:flex;justify-content:space-between;margin-bottom:4px}
+  .bars .b{height:8px;border-radius:4px;background:var(--sunk);overflow:hidden}
+  .bars .b i{display:block;height:100%;background:var(--acc);border-radius:4px}
+  .switch{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0}
+  .switch input{appearance:none;-webkit-appearance:none;width:52px;height:30px;border-radius:15px;background:var(--line);position:relative;flex:none;cursor:pointer;transition:background .2s}
+  .switch input::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  .switch input:checked{background:var(--ok)}
+  .switch input:checked::after{transform:translateX(22px)}
+  .chk{display:flex;gap:12px;padding:14px 0;border-top:1px solid var(--line)}
+  .chk:first-of-type{border-top:0}
+  .chk .dot2{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;flex:none;font-weight:800;font-size:15px}
+  .chk .dot2.ok{background:var(--ok-soft);color:var(--ok)}
+  .chk .dot2.warn{background:var(--na-soft);color:var(--na)}
+  .chk .dot2.ko{background:var(--ko-soft);color:var(--ko)}
+  .chk .t{flex:1;min-width:0}
+  .chk .t b{display:block;font-weight:600}
+  .chk .t small{display:block;color:var(--mut);font-size:14px}
+  .chk .t ul{margin:6px 0 0;padding-left:18px;font-size:14px}
+  .modal{position:fixed;inset:0;z-index:58;background:rgba(10,15,30,.6);display:none;align-items:flex-end;justify-content:center}
+  .modal.on{display:flex}
+  .modal-box{background:var(--surface);border-radius:22px 22px 0 0;padding:22px 20px calc(18px + env(safe-area-inset-bottom));width:100%;max-width:560px}
+  .modal-box h3{font:800 22px/1.2 var(--display);margin:0 0 8px}
+  .modal-box p{color:var(--mut);margin:0 0 16px}
   .native-only{display:none}
+  body.native .opt-entry.native-only{display:flex}
   body.native .native-only{display:block}
   body.native .web-only{display:none}
 
@@ -314,6 +367,10 @@
     <symbol id="i-bt" viewBox="0 0 24 24"><path d="M7 7l10 10-5 4V3l5 4L7 17"/></symbol>
     <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol>
     <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 3v12M7.5 7.5L12 3l4.5 4.5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5.5c0 4.5-3 8.2-7 9.5-4-1.3-7-5-7-9.5V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+    <symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 2v5M15 2v5M6 7h12v4a6 6 0 0 1-12 0zM12 17v5"/></symbol>
+    <symbol id="i-temp" viewBox="0 0 24 24"><path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z"/><path d="M12 11v6"/></symbol>
+    <symbol id="i-disk" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 15h.01M11 15h6"/></symbol>
     <symbol id="i-broom" viewBox="0 0 24 24"><path d="M14 3l-3.5 8M6.5 11h8l1.5 10H5z"/><path d="M8.5 15v6M12.5 15v6"/></symbol>
   </defs>
 </svg>
@@ -375,6 +432,9 @@
     <button class="opt-entry" data-go="v-opt"><span class="cat-ic"><svg class="i"><use href="#i-broom"/></svg></span>
       <span style="flex:1"><span class="cat-name">Optimisation</span><small id="optSummary">Doublons, gros fichiers, mémoire</small></span><svg class="i chev" style="color:var(--faint)"><use href="#i-chev"/></svg></button>
 
+    <button class="opt-entry native-only" data-go="v-sec" onclick="loadSecurity()"><span class="cat-ic" style="background:var(--acc-soft);color:var(--acc)"><svg class="i"><use href="#i-shield"/></svg></span>
+      <span style="flex:1"><span class="cat-name">Sécurité</span><small id="secSummary">Verrouillage, mises à jour, applis suspectes</small></span><svg class="i chev" style="color:var(--faint)"><use href="#i-chev"/></svg></button>
+
     <button class="report-btn" data-go="v-report"><svg class="i"><use href="#i-report"/></svg>Voir le rapport</button>
   </div>
 </section>
@@ -414,6 +474,25 @@
         <div class="t-body"><div class="readout two"><div><small>Score 1 cœur</small><b id="cpuSingle">—</b></div><div><small>Score tous les cœurs</small><b id="cpuMulti">—</b></div></div>
           <button class="btn go" style="width:100%" id="cpuBtn" onclick="testCPU()">Lancer le benchmark</button>
           <p style="margin-top:12px">Dure environ 5 secondes. Compare le score avec un autre téléphone ou avec ton historique.</p></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-disk"/></svg><span class="t-name">Vitesse du stockage</span><span class="pill" data-chip="storagespeed">À faire</span></summary>
+        <div class="t-body"><div class="readout two native-only"><div><small>Écriture</small><b id="ssW">—</b></div><div><small>Lecture</small><b id="ssR">—</b></div></div>
+          <button class="btn go native-only" style="width:100%" id="ssBtn" onclick="testStorageSpeed()">Mesurer la vitesse</button>
+          <p class="native-only" style="margin-top:12px">Écrit puis relit 128 Mo, puis les efface. Une mémoire lente rend tout le téléphone poussif.</p>
+          <p class="web-only">Disponible dans la version APK.</p></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-temp"/></svg><span class="t-name">Température</span><span class="pill" data-chip="thermal">À faire</span></summary>
+        <div class="t-body"><div class="readout native-only"><div><small>Processeur</small><b id="thCpu">—</b></div><div><small>Batterie</small><b id="thBat">—</b></div><div><small>État</small><b id="thState">—</b></div></div>
+          <button class="btn go native-only" style="width:100%" id="thBtn" onclick="testThermal()">Mesurer</button>
+          <p class="res native-only" id="thRes" style="margin-top:12px"></p>
+          <p class="web-only">Disponible dans la version APK.</p></div></details>
+
+      <details class="test"><summary><svg class="i t-ic"><use href="#i-plug"/></svg><span class="t-name">Chargeur et câble</span><span class="pill" data-chip="charger">À faire</span></summary>
+        <div class="t-body"><div class="readout native-only"><div><small>Courant</small><b id="chI">—</b></div><div><small>Puissance</small><b id="chW">—</b></div><div><small>Branché sur</small><b id="chT">—</b></div></div>
+          <p class="native-only" id="chTxt">Branche ton chargeur, puis lance le test. Il mesure le courant pendant 20 secondes, écran allumé.</p>
+          <button class="btn go native-only" style="width:100%" id="chBtn" onclick="testCharger()">Tester le chargeur</button>
+          <p class="res native-only" id="chRes" style="margin-top:12px"></p>
+          <p class="web-only">Disponible dans la version APK.</p></div></details>
     </div>
 
     <div class="panel"><h2>Appareil</h2><dl class="kv" id="devTable"></dl></div>
@@ -542,12 +621,36 @@
   <div class="wrap">
     <div class="bar"><button class="back" aria-label="Retour" data-go="v-home"><svg class="i"><use href="#i-back"/></svg></button><div><h1>Optimisation</h1><div class="sub">Libérer de la place et alléger le téléphone</div></div></div>
 
-    <div class="sec">
+    <div class="sec native-only" id="bilanSec">
+      <h2>Bilan</h2>
+      <div id="bilanBody"><p style="color:var(--mut);margin:0 0 12px">Une seule analyse passe en revue le stockage, les applis, le cache et la mémoire, puis te dit quoi faire.</p></div>
+      <button class="btn go" style="width:100%" id="bilanBtn" onclick="analyzeAll()">Lancer l'analyse complète</button>
+    </div>
+
+    <div class="sec native-only" id="cleanSec">
+      <h2>Nettoyage automatique</h2>
+      <div id="cleanBody"></div>
+    </div>
+
+    <div class="sec" id="dupSec">
       <h2>Doublons et photos similaires</h2>
       <p>Sélectionne tes photos, vidéos ou téléchargements. L'analyse se fait sur le téléphone, rien n'est envoyé.</p>
       <label class="drop"><b>Choisir des fichiers</b>Tu peux tout sélectionner d'un coup dans la galerie<input type="file" id="dupInput" multiple accept="image/*,video/*,audio/*,application/pdf,*/*"></label>
       <div id="dupProgress" class="note" style="display:none;padding-top:10px"></div>
       <div id="dupResult"></div>
+    </div>
+
+    <div class="sec native-only" id="appsSec">
+      <h2>Applications</h2>
+      <p>Repère les applis lourdes, celles qui gardent un gros cache et celles que tu n'ouvres plus. Coche-les pour les désinstaller à la suite.</p>
+      <div id="appsAccess"></div>
+      <button class="btn go" id="appsBtn" style="width:100%" onclick="loadApps()">Analyser mes applis</button>
+      <div id="appsResult"></div>
+    </div>
+
+    <div class="sec native-only" id="stSec">
+      <h2>Temps d'écran</h2>
+      <div id="stBody"><p style="color:var(--mut);margin:0">Lance l'analyse complète pour voir les applis qui t'occupent le plus.</p></div>
     </div>
 
     <div class="sec">
@@ -561,12 +664,10 @@
       <p class="res" id="storAdvice" style="margin:8px 0 0;font-weight:600"></p>
     </div>
 
-    <div class="sec native-only" id="appsSec">
-      <h2>Applications</h2>
-      <p>Repère les applis lourdes, celles qui gardent un gros cache et celles que tu n'ouvres plus.</p>
-      <div id="appsAccess"></div>
-      <button class="btn go" id="appsBtn" style="width:100%" onclick="loadApps()">Analyser mes applis</button>
-      <div id="appsResult"></div>
+    <div class="sec native-only">
+      <h2>Rappel de nettoyage</h2>
+      <label class="switch"><span>Me rappeler chaque dimanche à 18 h, avec l'état du stockage</span><input type="checkbox" id="remSw" onchange="toggleReminder(this.checked)"></label>
+      <button class="link-btn" style="color:var(--acc)" onclick="nat('testReminder');toast('Notification envoyée')">Envoyer une notification de test</button>
     </div>
 
     <div class="sec">
@@ -574,10 +675,21 @@
       <p id="stepsCount">Coche chaque étape une fois faite.</p>
       <ul class="steps" id="steps"></ul>
     </div>
-    <p class="note web-only">Dans la version APK, l'appli liste les applis inutilisées, montre leur cache et ouvre directement les bons réglages.</p>
+    <p class="note web-only">Dans la version APK, l'appli nettoie le stockage automatiquement, liste les applis inutilisées et ouvre directement les bons réglages.</p>
     <p class="note native-only">Android ne permet à aucune appli de vider le cache des autres : le bouton « Vider le cache » ouvre la bonne page des réglages.</p>
   </div>
 </section>
+
+<!-- ================= SÉCURITÉ ================= -->
+<section class="view" id="v-sec">
+  <div class="wrap">
+    <div class="bar"><button class="back" aria-label="Retour" data-go="v-home"><svg class="i"><use href="#i-back"/></svg></button><div><h1>Sécurité</h1><div class="sub" id="secSub">Vérification du téléphone</div></div></div>
+    <div class="sec" id="secBody"><p style="color:var(--mut);margin:0">Analyse en cours…</p></div>
+  </div>
+</section>
+
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()"><div class="modal-box"><h3 id="mdTitle">—</h3><p id="mdText">—</p>
+  <div class="row"><button class="btn" onclick="closeModal()">Annuler</button><button class="btn" id="mdOk" style="background:var(--ko);color:#fff">Confirmer</button></div></div></div>
 
 <!-- ================= RAPPORT ================= -->
 <section class="view" id="v-report">
@@ -622,13 +734,13 @@
    DÉFINITION DES TESTS
    ========================================================= */
 const TESTS = {
-  battery:'Batterie', drain:'Usure batterie', network:'Connexion', speed:'Débit internet', cpu:'Performances',
+  battery:'Batterie', drain:'Usure batterie', network:'Connexion', speed:'Débit internet', cpu:'Performances', storagespeed:'Vitesse stockage', thermal:'Température', charger:'Chargeur',
   pixels:'Pixels morts', touch:'Tactile', multitouch:'Multi-touch', brightness:'Luminosité max', gradient:'Uniformité écran', refresh:'Fluidité',
   accel:'Accéléromètre', gyro:'Gyroscope', compass:'Boussole', light:'Luminosité ambiante', gps:'GPS', proximity:'Proximité',
   speaker:'Haut-parleurs', mic:'Micro', vibrate:'Vibreur', camera:'Caméras', flash:'Flash', buttons:'Boutons', bluetooth:'Bluetooth'
 };
 const CATS = {
-  sys:['battery','drain','network','speed','cpu'],
+  sys:['battery','drain','network','speed','cpu','storagespeed','thermal','charger'],
   screen:['pixels','touch','multitouch','brightness','gradient','refresh'],
   sensors:['accel','gyro','compass','light','gps','proximity'],
   hw:['speaker','mic','vibrate','camera','flash','buttons','bluetooth']
@@ -636,10 +748,10 @@ const CATS = {
 const VIEW_OF = {}; const VIEWS = {sys:'v-sys',screen:'v-screen',sensors:'v-sensors',hw:'v-hw'};
 for (const c in CATS) CATS[c].forEach(id => VIEW_OF[id] = VIEWS[c]);
 // poids pour la note sur 100 ; les tests "critiques" plafonnent l'appréciation
-const WEIGHT = {touch:15, pixels:12, drain:12, speaker:10, mic:10, camera:10, battery:4, brightness:6, gradient:6, multitouch:5,
+const WEIGHT = {storagespeed:3, thermal:3, charger:4, touch:15, pixels:12, drain:12, speaker:10, mic:10, camera:10, battery:4, brightness:6, gradient:6, multitouch:5,
   vibrate:5, accel:5, gyro:4, compass:4, gps:5, flash:4, refresh:4, network:3, speed:3, cpu:2, light:3, buttons:3, bluetooth:3, proximity:3};
 const CRITICAL = ['touch','pixels','drain','speaker','mic','camera'];
-const MANUAL = ['drain','speed','cpu','pixels','touch','multitouch','brightness','gradient','refresh','accel','gyro','compass','light','gps','speaker','mic','vibrate','camera','flash'];
+const MANUAL = ['drain','speed','cpu','storagespeed','thermal','charger','pixels','touch','multitouch','brightness','gradient','refresh','accel','gyro','compass','light','gps','speaker','mic','vibrate','camera','flash'];
 const LABEL = {ok:'OK', ko:'Échec', na:'Non supporté'};
 const COLOR = {ok:'var(--ok)', ko:'var(--ko)', na:'var(--na)'};
 const IDS = Object.keys(TESTS);
@@ -781,6 +893,8 @@ function showStep(){
   if (['accel','gyro','compass','light','proximity'].includes(id)) startSensors();
   if (id==='speed') testSpeed();
   if (id==='cpu') testCPU();
+  if (id==='storagespeed') testStorageSpeed();
+  if (id==='thermal') testThermal();
   if (id==='refresh') testRefresh();
   if (id==='gps') testGPS();
 }
@@ -851,6 +965,12 @@ async function initSystem(){
     if (c.type) o['Type'] = {wifi:'Wi-Fi', cellular:'Mobile', ethernet:'Câble', none:'Aucune'}[c.type] || c.type;
     if (c.effectiveType) o['Qualité'] = c.effectiveType.toUpperCase();
     if (c.rtt != null) o['Latence estimée'] = c.rtt + ' ms';
+    const sg = nat('signal');
+    if (sg) {
+      if (sg.wifiRssi != null) { o['Signal Wi-Fi'] = `${sg.wifiRssi} dBm (${['très faible','faible','moyen','bon','excellent'][sg.wifiLevel] || '—'})`; o['Bande Wi-Fi'] = sg.wifiFreq > 4900 ? (sg.wifiFreq > 5925 ? '6 GHz' : '5 GHz') : '2,4 GHz'; o['Vitesse du lien'] = sg.wifiSpeed + ' Mb/s'; }
+      if (sg.mobileLevel != null) o['Signal mobile'] = `${'▮'.repeat(sg.mobileLevel)}${'▯'.repeat(4-sg.mobileLevel)}${sg.mobileDbm && sg.mobileDbm < 0 && sg.mobileDbm > -150 ? ` (${sg.mobileDbm} dBm)` : ''}`;
+      if (sg.operator) o['Opérateur'] = sg.operator;
+    }
     rows('netTable', o);
     mark('network', navigator.onLine ? 'ok' : 'ko');
   };
@@ -1524,6 +1644,7 @@ function testEarpiece(){ nat('earpiece'); toast('Colle l\'oreille en haut de l\'
 
 window.nativeBack = () => {
   if ($('sheet').classList.contains('on')) { $('sheet').classList.remove('on'); return true; }
+  if ($('modal').classList.contains('on')) { closeModal(); return true; }
   if (ov.classList.contains('on')) { closeOverlay(); return true; }
   if ($('welcome').classList.contains('on')) return false;
   if (!$('v-home').classList.contains('on')) { if (guide.on) stopGuide(); go('v-home'); return true; }
@@ -1531,8 +1652,10 @@ window.nativeBack = () => {
 };
 window.onNativeResume = () => {
   if (sensorsOn) { nat('startSensor','proximity'); nat('startSensor','light'); }
+  if (unQueue.active) { setTimeout(uninstallNext, 500); return; }
   if (appsLoaded) loadApps(true);
-  if (NATIVE) initOptMem();
+  if (NATIVE) { initOptMem(); renderCleanAccess(); $('remSw').checked = !!nat('reminderEnabled'); }
+  if ($('v-sec').classList.contains('on')) loadSecurity();
 };
 
 /* --- applications --- */
@@ -1570,12 +1693,325 @@ function renderApps(){
     if (u === 999) sub.push('<span class="warn">pas ouverte depuis 6 mois</span>');
     else if (u != null) sub.push(u >= 30 ? `<span class="warn">ouverte il y a ${u} jours</span>` : u === 0 ? 'ouverte aujourd\'hui' : `ouverte il y a ${u} j`);
     const safe = a.pkg.replace(/[^\w.]/g,'');
-    return `<div class="app-row"><div class="app-top"><b>${a.name.replace(/</g,'&lt;')}</b><span>${fmtBytes(size(a))}</span></div>
+    return `<div class="app-row"><div class="app-top"><label style="display:flex;gap:10px;align-items:center;min-width:0"><input type="checkbox" style="width:20px;height:20px;accent-color:var(--ko);flex:none" data-app="${safe}" ${appsSel.has(safe)?'checked':''} onchange="selApp('${safe}',this.checked)"><b>${a.name.replace(/</g,'&lt;')}</b></label><span>${fmtBytes(size(a))}</span></div>
       <div class="app-sub">${sub.join(', ') || 'taille de l\'appli seule'}</div>
       <div class="row"><button class="btn" onclick="nat('openAppInfo','${safe}')">Vider le cache</button><button class="btn" style="color:var(--ko)" onclick="nat('uninstall','${safe}')">Désinstaller</button></div></div>`;
   }).join('');
   if (sorted.length > 40) h += `<p class="note">Les 40 premières applis sont affichées.</p>`;
+  if (idle.length) h = h.replace('<div class="seg-ctl">', `<button class="btn" style="width:100%;margin-top:10px" onclick="selectIdle()">Cocher les ${idle.length} applis pas ouvertes depuis 30 jours</button><div class="seg-ctl">`);
+  h += `<div class="clean-bar" id="unBar" style="${appsSel.size?'':'display:none'}"><button class="btn" onclick="uninstallSelected()">Désinstaller la sélection (${appsSel.size})</button></div>`;
   $('appsResult').innerHTML = h;
+}
+
+
+/* =========================================================
+   OPTIMISATION AUTOMATIQUE (appli Android)
+   ========================================================= */
+const appsSel = new Set();
+function selApp(pkg, on){ on ? appsSel.add(pkg) : appsSel.delete(pkg); const b = $('unBar'); if (b) { b.style.display = appsSel.size ? '' : 'none'; b.querySelector('button').textContent = `Désinstaller la sélection (${appsSel.size})`; } }
+function selectIdle(){
+  appsData.forEach(a => { const u = a.lastUsed === -1 ? 999 : a.lastUsed > 0 ? daysAgo(a.lastUsed) : 0; if (u >= 30) appsSel.add(a.pkg.replace(/[^\w.]/g,'')); });
+  renderApps(); toast(`${appsSel.size} applis cochées. Vérifie la liste avant de désinstaller.`);
+}
+const unQueue = {active:false, list:[], current:null, done:0};
+function uninstallSelected(){
+  if (!appsSel.size) return;
+  openModal('Désinstaller ' + appsSel.size + ' appli' + (appsSel.size>1?'s':'') + ' ?',
+    'Android va te demander de confirmer chaque appli, une par une. Les données de ces applis seront supprimées.',
+    'Commencer', () => { unQueue.active = true; unQueue.list = [...appsSel]; unQueue.done = 0; unQueue.current = null; uninstallNext(); });
+}
+function uninstallNext(){
+  if (unQueue.current) { if (!nat('isInstalled', unQueue.current)) { unQueue.done++; appsSel.delete(unQueue.current); } unQueue.current = null; }
+  const next = unQueue.list.shift();
+  if (!next) { unQueue.active = false; toast(`${unQueue.done} appli${unQueue.done>1?'s':''} désinstallée${unQueue.done>1?'s':''}`); feedback('ok'); loadApps(true); return; }
+  unQueue.current = next; nat('uninstall', next);
+}
+
+function openModal(title, text, okLabel, onOk){
+  $('mdTitle').textContent = title; $('mdText').textContent = text; $('mdOk').textContent = okLabel;
+  $('mdOk').onclick = () => { closeModal(); onOk(); };
+  $('modal').classList.add('on');
+}
+function closeModal(){ $('modal').classList.remove('on'); }
+
+/* --- nettoyage du stockage --- */
+const CLEAN_CATS = {
+  trash:{t:'Corbeille', d:'Fichiers supprimés qui attendent encore dans la corbeille', on:true},
+  apk:{t:'Fichiers d\'installation (APK)', d:'Inutiles une fois l\'appli installée', on:true},
+  thumbs:{t:'Miniatures', d:'Aperçus que la galerie recrée toute seule', on:true},
+  temp:{t:'Fichiers temporaires', d:'Journaux et téléchargements interrompus', on:true},
+  duplicates:{t:'Doublons', d:'Copies exactes, l\'original est conservé', on:true},
+  emptyDirs:{t:'Dossiers vides', d:'Restes d\'applis désinstallées', on:true},
+  screenshots:{t:'Captures d\'écran de plus de 30 jours', d:'À vérifier avant de supprimer', on:false},
+  messaging:{t:'Médias de messagerie de plus de 3 mois', d:'Photos et vidéos reçues sur WhatsApp et Telegram', on:false},
+  big:{t:'Gros fichiers (plus de 100 Mo)', d:'Vidéos et archives lourdes, à vérifier une par une', on:false},
+};
+let scan = null, scanBusy = false, cleanSel = {}, cleanExclude = new Set(), openCats = new Set();
+function renderCleanAccess(){
+  if (!NATIVE) return;
+  const ok = nat('hasAllFiles');
+  $('dupSec').style.display = ok ? 'none' : '';
+  if (!ok) {
+    $('cleanBody').innerHTML = `<p style="color:var(--mut);margin:0 0 12px">Pour trouver et supprimer automatiquement les fichiers inutiles (corbeille, doublons, APK, miniatures…), Phone Medic a besoin de l'accès à tous les fichiers. Rien n'est supprimé sans ta confirmation.</p>
+      <button class="btn go" style="width:100%" onclick="nat('requestAllFiles')">Autoriser l'accès aux fichiers</button>`;
+  } else if (!scan && !scanBusy) {
+    $('cleanBody').innerHTML = `<p style="color:var(--mut);margin:0 0 12px">Analyse tout le stockage et range les fichiers inutiles par catégorie.</p>
+      <button class="btn go" style="width:100%" onclick="startScan()">Analyser le stockage</button>`;
+  }
+}
+window.onNativePermission = (kind, ok) => {
+  if (kind === 'storage') renderCleanAccess();
+  if (kind === 'notifications') { $('remSw').checked = !!ok && !!nat('reminderEnabled'); if (ok) toast('Rappel activé : chaque dimanche à 18 h'); else toast('Notifications refusées'); }
+};
+function startScan(){
+  if (scanBusy) return;
+  scanBusy = true; scan = null;
+  $('cleanBody').innerHTML = `<p class="res" id="scanProg" style="margin:0">Analyse du stockage…</p><div class="meter" style="margin-top:10px"><i id="scanBar" style="width:5%"></i></div>`;
+  nat('scanJunk');
+}
+window.onNativeScanProgress = (phase, n) => {
+  const el = $('scanProg'); if (!el) return;
+  el.textContent = phase === 'files' ? `${n.toLocaleString('fr-FR')} fichiers parcourus…` : `Recherche des doublons… ${n ? n.toLocaleString('fr-FR') + ' comparés' : ''}`;
+  $('scanBar').style.width = phase === 'files' ? Math.min(70, 5 + n/400) + '%' : '85%';
+};
+window.onNativeScan = r => {
+  scanBusy = false;
+  if (!r || r.error) { $('cleanBody').innerHTML = `<p class="res" style="color:var(--ko)">L'analyse a échoué${r && r.error ? ' : ' + r.error : ''}.</p><button class="btn go" style="width:100%" onclick="startScan()">Réessayer</button>`; return; }
+  scan = r; cleanExclude.clear();
+  for (const k in CLEAN_CATS) if (!(k in cleanSel)) cleanSel[k] = CLEAN_CATS[k].on;
+  renderClean(); renderBilan();
+  if (analyzeAllPending) analyzeStep();
+};
+function cleanTotals(){
+  let n = 0, b = 0;
+  for (const k in CLEAN_CATS) {
+    const c = scan?.cats?.[k]; if (!c || !cleanSel[k]) continue;
+    const exSize = c.items.filter(it => cleanExclude.has(it.p)).reduce((a,it) => a + it.s, 0);
+    const exN = c.items.filter(it => cleanExclude.has(it.p)).length;
+    n += c.count - exN; b += c.size - exSize;
+  }
+  return {n, b};
+}
+function renderClean(){
+  if (!scan) return;
+  const safeTotal = ['trash','apk','thumbs','temp','duplicates','emptyDirs'].reduce((a,k) => a + (scan.cats[k]?.size||0), 0);
+  let h = `<div class="found"><div><b>${scan.files.toLocaleString('fr-FR')}</b><small>fichiers analysés</small></div>
+    <div><b>${fmtBytes(safeTotal)}</b><small>inutiles à coup sûr</small></div>
+    <div><b>${fmtBytes((scan.cats.big?.size||0) + (scan.cats.messaging?.size||0) + (scan.cats.screenshots?.size||0))}</b><small>à vérifier</small></div></div>`;
+  for (const k in CLEAN_CATS) {
+    const c = scan.cats[k]; if (!c || !c.count) continue;
+    const m = CLEAN_CATS[k];
+    h += `<div class="cleanup"><label class="cl-head"><input type="checkbox" ${cleanSel[k]?'checked':''} onchange="cleanSel['${k}']=this.checked;updateCleanBtn()">
+      <span class="t"><b>${m.t}</b><small>${m.d}</small></span>
+      <span class="sz"><b>${k==='emptyDirs' ? '—' : fmtBytes(c.size)}</b><small>${c.count.toLocaleString('fr-FR')} élément${c.count>1?'s':''}</small></span></label>
+      <button class="cl-more" onclick="toggleCat('${k}')">${openCats.has(k) ? 'Masquer la liste' : 'Voir la liste'}</button>
+      ${openCats.has(k) ? `<ul class="cl-list">${c.items.map(it => `<li><input type="checkbox" ${cleanExclude.has(it.p)?'':'checked'} onchange="exFile(${JSON.stringify(it.p).replace(/"/g,'&quot;')},this.checked)"><span>${it.p.replace(/</g,'&lt;')}</span><b>${it.s ? fmtBytes(it.s) : ''}</b></li>`).join('')}
+        ${c.count > c.items.length ? `<li><span style="direction:ltr">… et ${(c.count - c.items.length).toLocaleString('fr-FR')} autres</span></li>` : ''}</ul>` : ''}</div>`;
+  }
+  if (!Object.values(scan.cats).some(c => c.count)) h += `<p class="res" style="color:var(--ok)">Rien à nettoyer, ton stockage est propre.</p>`;
+  h += `<div class="clean-bar"><button class="btn" id="cleanBtn" onclick="confirmClean()">Nettoyer</button></div>
+    <button class="link-btn" style="color:var(--acc)" onclick="startScan()">Relancer l'analyse</button>`;
+  $('cleanBody').innerHTML = h;
+  updateCleanBtn();
+}
+function toggleCat(k){ openCats.has(k) ? openCats.delete(k) : openCats.add(k); renderClean(); }
+function exFile(p, keep){ keep ? cleanExclude.delete(p) : cleanExclude.add(p); updateCleanBtn(); }
+function updateCleanBtn(){
+  const b = $('cleanBtn'); if (!b) return;
+  const t = cleanTotals();
+  b.disabled = !t.n;
+  b.textContent = t.n ? `Nettoyer ${fmtBytes(t.b)} (${t.n.toLocaleString('fr-FR')} élément${t.n>1?'s':''})` : 'Rien de sélectionné';
+}
+function confirmClean(){
+  const t = cleanTotals(); if (!t.n) return;
+  openModal(`Supprimer ${t.n.toLocaleString('fr-FR')} élément${t.n>1?'s':''} ?`,
+    `${fmtBytes(t.b)} seront libérés. Les fichiers sont supprimés définitivement, sans passer par la corbeille.`,
+    'Supprimer', () => {
+      $('cleanBody').innerHTML = `<p class="res" style="margin:0">Nettoyage en cours…</p><div class="meter" style="margin-top:10px"><i style="width:60%"></i></div>`;
+      nat('cleanJunk', JSON.stringify({cats: Object.keys(CLEAN_CATS).filter(k => cleanSel[k]), exclude:[...cleanExclude]}));
+    });
+}
+window.onNativeClean = r => {
+  if (!r || r.error) { toast('Le nettoyage a échoué'); scan = null; renderCleanAccess(); return; }
+  const total = (store.get('freedTotal', 0) || 0) + r.freed; store.set('freedTotal', total);
+  feedback('ok');
+  $('cleanBody').innerHTML = `<div class="verdict good" style="margin:0 0 12px">${fmtBytes(r.freed)} libérés, ${r.deleted.toLocaleString('fr-FR')} élément${r.deleted>1?'s':''} supprimé${r.deleted>1?'s':''}.${r.failed ? ` ${r.failed} n'ont pas pu être supprimés.` : ''}<br><small style="font-weight:500">Depuis l'installation de Phone Medic : ${fmtBytes(total)} libérés.</small></div>`;
+  info['Espace libéré'] = fmtBytes(total);
+  scan = null; initOptMem();
+  setTimeout(() => { startScan(); }, 1200);
+};
+
+/* --- temps d'écran --- */
+const fmtDur = ms => { const m = Math.round(ms/60000); return m >= 60 ? `${Math.floor(m/60)} h ${String(m%60).padStart(2,'0')}` : `${m} min`; };
+function loadScreenTime(){
+  const r = nat('screenTime');
+  if (!r || !r.access) { $('stBody').innerHTML = `<p style="color:var(--mut);margin:0 0 12px">Autorise « Accès aux données d'utilisation » pour voir le temps passé sur chaque appli.</p><button class="btn go" style="width:100%" onclick="nat('openSettings','android.settings.USAGE_ACCESS_SETTINGS')">Autoriser l'accès</button>`; return; }
+  const t = r.today, w = r.week, max = t.apps[0]?.ms || 1;
+  $('stBody').innerHTML = `<div class="readout two"><div><small>Aujourd'hui</small><b>${fmtDur(t.total)}</b></div><div><small>Moyenne sur 7 jours</small><b>${fmtDur(w.total/7)}</b></div></div>
+    ${t.apps.length ? `<ul class="bars">${t.apps.map(a => `<li><div class="l"><span>${a.name.replace(/</g,'&lt;')}</span><b>${fmtDur(a.ms)}</b></div><div class="b"><i style="width:${a.ms/max*100}%"></i></div></li>`).join('')}</ul>` : '<p style="color:var(--mut);margin:0">Pas encore d\'utilisation aujourd\'hui.</p>'}`;
+  info['Temps d\'écran aujourd\'hui'] = fmtDur(t.total);
+}
+
+/* --- bilan global --- */
+let analyzeAllPending = false, analyzeStage = 0;
+function analyzeAll(){
+  analyzeAllPending = true; analyzeStage = 0;
+  $('bilanBtn').disabled = true; $('bilanBtn').textContent = 'Analyse en cours…';
+  analyzeStep();
+}
+function analyzeStep(){
+  analyzeStage++;
+  if (analyzeStage === 1) { if (nat('hasAllFiles')) { startScan(); return; } analyzeStage++; }
+  if (analyzeStage === 2) { loadApps(true); loadScreenTime(); setTimeout(analyzeStep, 1500); return; }
+  analyzeAllPending = false;
+  $('bilanBtn').disabled = false; $('bilanBtn').textContent = 'Relancer l\'analyse';
+  renderBilan();
+  store.set('lastOptim', Date.now());
+}
+function renderBilan(){
+  if (!NATIVE) return;
+  const ns = nat('storage'), nm = nat('memory'), dev = nat('device');
+  let score = 100; const recos = [];
+  const push = (pts, color, text, btn) => { score -= pts; recos.push({pts, color, text, btn}); };
+  if (ns?.total) {
+    const pct = Math.round((ns.total - ns.free) / ns.total * 100);
+    if (pct >= 90) push(25, 'var(--ko)', `Stockage plein à ${pct} % : c'est la première cause de lenteur.`, ['Libérer', "document.getElementById('cleanSec').scrollIntoView({behavior:'smooth'})"]);
+    else if (pct >= 80) push(12, 'var(--na)', `Stockage occupé à ${pct} %. Android ralentit au-delà de 85 %.`, ['Libérer', "document.getElementById('cleanSec').scrollIntoView({behavior:'smooth'})"]);
+  }
+  if (scan) {
+    const junk = ['trash','apk','thumbs','temp','duplicates'].reduce((a,k) => a + (scan.cats[k]?.size||0), 0);
+    if (junk > 5e9) push(20, 'var(--ko)', `${fmtBytes(junk)} de fichiers inutiles à supprimer.`, ['Nettoyer', "document.getElementById('cleanSec').scrollIntoView({behavior:'smooth'})"]);
+    else if (junk > 1e9) push(10, 'var(--na)', `${fmtBytes(junk)} de fichiers inutiles à supprimer.`, ['Nettoyer', "document.getElementById('cleanSec').scrollIntoView({behavior:'smooth'})"]);
+    else if (junk > 2e8) push(4, 'var(--na)', `${fmtBytes(junk)} de fichiers inutiles.`, ['Nettoyer', "document.getElementById('cleanSec').scrollIntoView({behavior:'smooth'})"]);
+  }
+  if (appsLoaded) {
+    const idle = appsData.filter(a => a.lastUsed === -1 || (a.lastUsed > 0 && daysAgo(a.lastUsed) >= 30)).length;
+    const cache = appsData.reduce((s,a) => s + (a.cache||0), 0);
+    if (idle > 10) push(15, 'var(--ko)', `${idle} applis pas ouvertes depuis un mois.`, ['Voir', "selectIdle();document.getElementById('appsSec').scrollIntoView({behavior:'smooth'})"]);
+    else if (idle > 3) push(8, 'var(--na)', `${idle} applis pas ouvertes depuis un mois.`, ['Voir', "selectIdle();document.getElementById('appsSec').scrollIntoView({behavior:'smooth'})"]);
+    if (cache > 3e9) push(10, 'var(--ko)', `${fmtBytes(cache)} de cache dans les applis.`, ['Voir', "setAppsSort('cache');document.getElementById('appsSec').scrollIntoView({behavior:'smooth'})"]);
+    else if (cache > 1e9) push(5, 'var(--na)', `${fmtBytes(cache)} de cache dans les applis.`, ['Voir', "setAppsSort('cache');document.getElementById('appsSec').scrollIntoView({behavior:'smooth'})"]);
+  }
+  if (dev?.uptimeH > 24*7) push(5, 'var(--na)', `Téléphone allumé depuis ${Math.floor(dev.uptimeH/24)} jours : redémarre-le pour vider la mémoire.`, null);
+  if (nm?.total && nm.available / nm.total < .15) push(5, 'var(--na)', 'Mémoire vive presque saturée : ferme les applis inutiles ou redémarre.', null);
+  score = Math.max(0, score);
+  const lbl = score >= 90 ? 'Téléphone en pleine forme' : score >= 70 ? 'Quelques optimisations possibles' : score >= 50 ? 'Optimisation conseillée' : 'Optimisation nécessaire';
+  const col = score >= 85 ? 'var(--ok)' : score >= 60 ? 'var(--na)' : 'var(--ko)';
+  const partial = !scan || !appsLoaded;
+  recos.sort((a,b) => b.pts - a.pts);
+  $('bilanBody').innerHTML = `<div class="big-score"><div class="num" style="color:${col}">${score}<small>/100</small></div><div class="lbl">${lbl}${partial ? '<br><small style="font:500 13px var(--body);color:var(--mut)">Bilan partiel : lance l\'analyse complète</small>' : ''}</div></div>
+    ${recos.length ? `<ul class="recos">${recos.map(r => `<li><i style="background:${r.color}"></i><span>${r.text}</span>${r.btn ? `<button onclick="${r.btn[1]}">${r.btn[0]}</button>` : ''}</li>`).join('')}</ul>` : '<p class="res" style="color:var(--ok);margin:0 0 12px">Rien à signaler.</p>'}`;
+  $('optSummary').textContent = `Bilan ${score}/100`;
+  info['Bilan optimisation'] = `${score}/100`;
+}
+
+/* --- rappel --- */
+function toggleReminder(on){ nat('setReminder', on); if (!on) toast('Rappel désactivé'); }
+
+/* =========================================================
+   NOUVEAUX TESTS (appli Android)
+   ========================================================= */
+function testStorageSpeed(){
+  if (!NATIVE) return;
+  const b = $('ssBtn'); if (b.disabled) return;
+  b.disabled = true; b.textContent = 'Mesure en cours…';
+  nat('storageSpeed');
+}
+window.onNativeSpeed = r => {
+  const b = $('ssBtn'); b.disabled = false; b.textContent = 'Refaire la mesure';
+  if (!r || r.error) { toast('Mesure impossible'); return mark('storagespeed','na'); }
+  $('ssW').textContent = Math.round(r.write) + ' Mo/s'; $('ssR').textContent = Math.round(r.read) + ' Mo/s';
+  const d = `écriture ${Math.round(r.write)} Mo/s, lecture ${Math.round(r.read)} Mo/s`;
+  info['Vitesse du stockage'] = d;
+  mark('storagespeed', r.write >= 40 ? 'ok' : 'ko', {detail: d});
+};
+const THERMAL = ['Normal','Tiède','Chaud','Très chaud','Critique','Urgence','Arrêt'];
+function testThermal(){
+  if (!NATIVE) return;
+  const r = nat('thermal'); if (!r) return mark('thermal','na');
+  $('thCpu').textContent = r.cpu > 0 ? fr(r.cpu) + ' °C' : 'Masquée';
+  $('thBat').textContent = r.battery ? fr(r.battery) + ' °C' : '—';
+  $('thState').textContent = r.status != null ? THERMAL[r.status] || '—' : '—';
+  const hot = (r.status ?? 0) >= 2 || r.cpu > 75 || r.battery > 42;
+  $('thRes').textContent = hot ? 'Le téléphone chauffe. Retire la coque, ferme les jeux et évite de l\'utiliser en charge.' : 'Températures normales.';
+  $('thRes').style.color = hot ? 'var(--ko)' : 'var(--ok)';
+  const d = [r.cpu > 0 ? `processeur ${fr(r.cpu)} °C` : null, r.battery ? `batterie ${fr(r.battery)} °C` : null].filter(Boolean).join(', ');
+  info['Température'] = d;
+  mark('thermal', hot ? 'ko' : 'ok', {detail: d});
+}
+let chBusy = false;
+function testCharger(){
+  if (!NATIVE || chBusy) return;
+  const first = nat('battery');
+  if (!first?.plugged) { $('chTxt').textContent = 'Aucun chargeur détecté. Branche-le, puis relance le test.'; $('chTxt').style.color = 'var(--ko)'; return; }
+  $('chTxt').style.color = '';
+  chBusy = true; const b = $('chBtn'); b.disabled = true;
+  nat('keepScreenOn', true);
+  const samples = []; let n = 0;
+  const type = {1:'Secteur', 2:'USB', 4:'Sans fil', 8:'Dock'}[first.plugged] || 'Chargeur';
+  $('chT').textContent = type;
+  const tick = setInterval(() => {
+    const r = nat('battery'); n++;
+    b.textContent = `Mesure… ${20 - n} s`;
+    if (r && r.plugged && r.currentNow) {
+      let ma = Math.abs(r.currentNow); if (ma > 20000) ma /= 1000;
+      samples.push({ma, v: r.voltage || 3.9});
+      $('chI').textContent = Math.round(ma) + ' mA'; $('chW').textContent = fr(ma * (r.voltage||3.9) / 1000) + ' W';
+    }
+    if (!r?.plugged || n >= 20) {
+      clearInterval(tick); chBusy = false; b.disabled = false; b.textContent = 'Refaire le test'; nat('keepScreenOn', false);
+      if (!r?.plugged) { $('chRes').textContent = 'Le chargeur a été débranché pendant le test. Un faux contact peut aussi en être la cause.'; $('chRes').style.color = 'var(--ko)'; return mark('charger','ko', {detail:'coupure pendant la charge'}); }
+      if (samples.length < 5) { $('chRes').textContent = 'Ce téléphone ne communique pas le courant de charge.'; return mark('charger','na'); }
+      const s = samples.map(x => x.ma).sort((a,b) => a-b), med = s[Math.floor(s.length/2)];
+      const w = med * samples[0].v / 1000, full = (first.level || 0) >= .95;
+      let txt, st;
+      if (full) { txt = `Batterie presque pleine : la charge ralentit volontairement (${Math.round(med)} mA). Refais le test sous 80 %.`; st = 'ok'; }
+      else if (med < 300) { txt = `Charge très lente (${Math.round(med)} mA). Change de câble ou de chargeur, ou nettoie le port de charge.`; st = 'ko'; }
+      else if (med < 900) { txt = `Charge lente (${fr(w)} W). Normal sur un port USB d'ordinateur, faible pour un chargeur secteur.`; st = first.plugged === 2 ? 'ok' : 'ko'; }
+      else if (med < 1800) { txt = `Charge normale (${fr(w)} W).`; st = 'ok'; }
+      else { txt = `Charge rapide (${fr(w)} W).`; st = 'ok'; }
+      $('chRes').textContent = txt; $('chRes').style.color = st === 'ok' ? 'var(--ok)' : 'var(--ko)';
+      const d = `${Math.round(med)} mA, ${fr(w)} W (${type.toLowerCase()})`;
+      info['Chargeur'] = d;
+      mark('charger', st, {detail: d});
+    }
+  }, 1000);
+}
+
+/* =========================================================
+   SÉCURITÉ (appli Android)
+   ========================================================= */
+const KNOWN_ADMIN = ['com.google.android.gms','com.google.android.apps.work.clouddpc','com.samsung.android.fmm','com.android.managedprovisioning'];
+function loadSecurity(){
+  if (!NATIVE) return;
+  const r = nat('security'); if (!r) return;
+  const items = [];
+  const add = (st, title, text, fix, list) => items.push({st, title, text, fix, list});
+  add(r.lockScreen ? 'ok' : 'ko', 'Verrouillage de l\'écran', r.lockScreen ? 'Un code, un schéma ou une empreinte protège le téléphone.' : 'Aucun code : n\'importe qui peut ouvrir ton téléphone.', r.lockScreen ? null : ['Activer', 'android.app.action.SET_NEW_PASSWORD']);
+  let months = null;
+  if (r.patch) { const d = new Date(r.patch); months = Math.max(0, Math.round((Date.now() - d) / (30.4*864e5))); }
+  add(months == null ? 'warn' : months <= 3 ? 'ok' : months <= 12 ? 'warn' : 'ko', 'Correctif de sécurité',
+    months == null ? 'Date inconnue.' : `Dernier correctif : ${new Date(r.patch).toLocaleDateString('fr-FR',{month:'long',year:'numeric'})}${months > 3 ? `, il y a ${months} mois` : ''}.${months > 12 ? ' Ton téléphone ne reçoit peut-être plus de mises à jour.' : ''}`,
+    months > 3 ? ['Mettre à jour', 'android.settings.SYSTEM_UPDATE_SETTINGS'] : null);
+  add(r.sdk >= 33 ? 'ok' : r.sdk >= 30 ? 'warn' : 'ko', 'Version d\'Android', `Android ${r.android}.${r.sdk < 30 ? ' Version ancienne : les applis bancaires et de sécurité risquent de ne plus fonctionner.' : ''}`, null);
+  add(r.adb ? 'ko' : r.devOptions ? 'warn' : 'ok', 'Options pour développeurs',
+    r.adb ? 'Le débogage USB est activé : un ordinateur branché peut accéder au téléphone.' : r.devOptions ? 'Activées. Sans risque si tu sais pourquoi, sinon désactive-les.' : 'Désactivées.',
+    r.adb || r.devOptions ? ['Ouvrir', 'android.settings.APPLICATION_DEVELOPMENT_SETTINGS'] : null);
+  add(r.root ? 'warn' : 'ok', 'Accès root', r.root ? 'Le téléphone semble rooté : les protections d\'Android sont contournables.' : 'Non détecté.', null);
+  const acc = r.accessibility || [];
+  add(acc.length ? 'warn' : 'ok', 'Services d\'accessibilité', acc.length ? 'Ces applis peuvent lire l\'écran et agir à ta place. Vérifie que tu les reconnais toutes :' : 'Aucune appli ne contrôle l\'écran.', acc.length ? ['Vérifier', 'android.settings.ACCESSIBILITY_SETTINGS'] : null, acc);
+  const adm = (r.admins || []).filter(a => !KNOWN_ADMIN.includes(a.pkg));
+  add(adm.length ? 'warn' : 'ok', 'Administrateurs de l\'appareil', adm.length ? 'Ces applis ont des droits étendus (effacer, verrouiller) :' : 'Seuls les services habituels.', adm.length ? ['Vérifier', 'android.settings.SECURITY_SETTINGS'] : null, adm);
+  const unk = r.unknownSource || [];
+  add(unk.length > 5 ? 'warn' : 'ok', 'Applis installées hors store', unk.length ? `${unk.length} appli${unk.length>1?'s':''} ne vien${unk.length>1?'nent':'t'} pas d'un store officiel :` : 'Toutes tes applis viennent d\'un store officiel.', null, unk.slice(0, 15));
+  const okN = items.filter(i => i.st === 'ok').length;
+  const icon = {ok:'✓', warn:'!', ko:'✕'};
+  $('secSub').textContent = `${okN} point${okN>1?'s':''} sur ${items.length} au vert`;
+  $('secSummary').textContent = `${okN}/${items.length} points au vert`;
+  info['Sécurité'] = `${okN}/${items.length} points au vert`;
+  $('secBody').innerHTML = items.map(i => `<div class="chk"><span class="dot2 ${i.st}">${icon[i.st]}</span><div class="t"><b>${i.title}</b><small>${i.text}</small>
+    ${i.list && i.list.length ? `<ul>${i.list.map(a => `<li>${a.name.replace(/</g,'&lt;')} <button class="open-btn" style="margin:2px 0 0 4px" onclick="nat('openAppInfo','${a.pkg.replace(/[^\w.]/g,'')}')">Infos</button></li>`).join('')}</ul>` : ''}
+    ${i.fix ? `<button class="open-btn" onclick="nat('openSettings','${i.fix[1]}')">${i.fix[0]}</button>` : ''}</div></div>`).join('');
 }
 
 /* =========================================================
@@ -1599,9 +2035,12 @@ function closeWelcome(startNow){
   if (NATIVE) {
     $('proxTxt').textContent = 'Active les capteurs, puis passe la main devant le haut de l\'écran, près de l\'écouteur, et retire-la.';
     $('keysTxt').textContent = 'Appuie sur Volume +, puis sur Volume −. Le test se valide quand les deux répondent.';
+    renderCleanAccess(); $('remSw').checked = !!nat('reminderEnabled');
+    renderBilan(); setTimeout(loadSecurity, 300);
   } else {
     mark('proximity','na');
     if (!seenKeys.size) mark('buttons','na');
+    ['storagespeed','thermal','charger'].forEach(id => mark(id, 'na'));
   }
   initSystem();
   renderSteps(); initOptMem();
