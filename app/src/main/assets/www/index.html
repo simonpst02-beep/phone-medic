@@ -524,7 +524,7 @@
 
       <details class="test"><summary><svg class="i t-ic"><use href="#i-flash"/></svg><span class="t-name">Flash</span><span class="pill" data-chip="flash">À faire</span></summary>
         <div class="t-body"><p>Allume la lampe de la caméra arrière. Fonctionne surtout avec Chrome sur Android.</p>
-          <button class="btn go" style="width:100%" onclick="toggleTorch()">Allumer ou éteindre</button>
+          <button class="btn go" style="width:100%" id="torchBtn" onclick="toggleTorch()">Allumer le flash</button>
           <div class="ask"><div class="q">Le flash s'est-il allumé ?</div><div class="row"><button class="yes" onclick="mark('flash','ok')">Oui</button><button class="no" onclick="mark('flash','ko')">Non</button></div></div></div></details>
 
       <details class="test"><summary><svg class="i t-ic"><use href="#i-btn"/></svg><span class="t-name">Boutons</span><span class="pill" data-chip="buttons">À faire</span></summary>
@@ -1191,18 +1191,24 @@ async function openCam(facing){
     info['Caméras détectées'] = devs;
   } catch(e){ $('camInfo').textContent='Caméra inaccessible : autorisation refusée ou matériel absent.'; mark('camera','na'); }
 }
-function stopCam(){ if (camStream) camStream.getTracks().forEach(t=>t.stop()); camStream=null; torchOn=false; $('camVideo').style.display='none'; }
+function stopCam(){ if (camStream) camStream.getTracks().forEach(t=>t.stop()); camStream=null; if (!NATIVE) torchOn=false; $('camVideo').style.display='none'; updateTorchBtn(); }
+function updateTorchBtn(){ const b = $('torchBtn'); if (b) b.textContent = torchOn ? 'Éteindre le flash' : 'Allumer le flash'; }
+// éteint la lampe si on quitte l'appli ou l'écran
+document.addEventListener('visibilitychange', () => { if (document.hidden && torchOn) { if (NATIVE) nat('torch', false); torchOn = false; updateTorchBtn(); } });
 async function toggleTorch(){
   if (NATIVE) {
-    stopCam(); torchOn = !torchOn;
-    if (!nat('torch', torchOn)) { torchOn = false; toast('Ce téléphone n\'a pas de flash pilotable'); mark('flash','na'); }
+    const next = !torchOn;
+    if (next && camStream) stopCam();   // la caméra ouverte bloque la lampe
+    if (nat('torch', next)) torchOn = next;
+    else { torchOn = false; toast('Ce téléphone n\'a pas de flash pilotable'); mark('flash','na'); }
+    updateTorchBtn();
     return;
   }
   try {
     if (!camStream) await openCam('environment');
     const tr = camStream.getVideoTracks()[0], caps = tr.getCapabilities?.() || {};
     if (!caps.torch) { toast('Ce navigateur ne peut pas piloter le flash'); return mark('flash','na'); }
-    torchOn = !torchOn; await tr.applyConstraints({advanced:[{torch:torchOn}]});
+    torchOn = !torchOn; await tr.applyConstraints({advanced:[{torch:torchOn}]}); updateTorchBtn();
   } catch(e){ toast('Flash indisponible'); mark('flash','na'); }
 }
 const seenKeys = new Set();
